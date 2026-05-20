@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+/*
+  Theme tokens for the configurator. To match an exact brand identity,
+  edit the values below — every component reads from these.
+*/
+@theme {
+  --color-ink: #16181d;
+  --color-ink-soft: #3a3f47;
+  --color-muted: #6b7079;
+  --color-page: #f4f2ed;
+  --color-surface: #ffffff;
+  --color-line: #e4e0d7;
+  --color-accent: #c0502b;
+  --color-accent-600: #a8431f;
+  --color-accent-50: #f7ece7;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
