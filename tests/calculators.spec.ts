@@ -100,6 +100,19 @@ test("two insulation measures in the wishlist auto-apply the higher ISDE rate", 
   await expect(page.getByText(/verhoogd tarief bij 2\+ maatregelen/i)).toBeVisible();
 });
 
+test("badkamer module estimates and offers no national subsidy", async ({ page }) => {
+  await page.goto("/calculator/badkamer");
+  await expect(page.getByRole("heading", { name: "Badkamer", level: 1 })).toBeVisible();
+  await expect(page.getByText(/Geschatte richtprijs/)).toBeVisible();
+  // Adding a ligbad must raise the estimate.
+  const before = await page.getByText(/Geschatte richtprijs/).locator("..").innerText();
+  await page.getByRole("switch", { name: /Ligbad/ }).click();
+  const after = await page.getByText(/Geschatte richtprijs/).locator("..").innerText();
+  expect(after).not.toEqual(before);
+  // Bathrooms have no national grant.
+  await expect(page.getByText(/geen landelijke subsidie/i)).toBeVisible();
+});
+
 test("lead api rejects invalid email", async ({ page }) => {
   const res = await page.request.post("/api/lead", {
     data: { calculator: "stucwerk", contact: { name: "X", email: "nope" } },

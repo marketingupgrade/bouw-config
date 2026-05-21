@@ -438,7 +438,106 @@ const opbouwUitbouw: Calculator = {
   },
 };
 
-export const CALCULATORS: Calculator[] = [stucwerk, schilderwerk, isolatie, opbouwUitbouw];
+const badkamer: Calculator = {
+  slug: "badkamer",
+  title: "Badkamer",
+  tagline: "Complete badkamerrenovatie",
+  description:
+    "Richtprijs voor een complete badkamerverbouwing op basis van oppervlakte, afwerkingsniveau, sanitair en tegelwerk — inclusief sloop en installatie.",
+  accent: "#4f7d86",
+  fields: [
+    {
+      key: "oppervlak",
+      label: "Oppervlakte badkamer",
+      type: "number",
+      unit: "m²",
+      min: 2,
+      max: 30,
+      step: 1,
+      default: 6,
+    },
+    {
+      key: "niveau",
+      label: "Afwerkingsniveau",
+      type: "select",
+      default: "standaard",
+      options: [
+        { id: "budget", label: "Budget", hint: "Functioneel en degelijk", priceHint: "± € 900/m²" },
+        { id: "standaard", label: "Standaard", hint: "Compleet, goede kwaliteit", priceHint: "± € 1.400/m²" },
+        { id: "luxe", label: "Luxe", hint: "Hoogwaardige materialen", priceHint: "± € 2.200/m²" },
+      ],
+    },
+    {
+      key: "tegelwerk",
+      label: "Tegelwerk",
+      type: "select",
+      default: "wandenvloer",
+      options: [
+        { id: "geen", label: "Geen", hint: "Bestaand tegelwerk blijft" },
+        { id: "wanden", label: "Wanden", hint: "Wandtegels, +€120/m²" },
+        { id: "wandenvloer", label: "Wanden en vloer", hint: "Volledig betegeld, +€180/m²" },
+      ],
+    },
+    {
+      key: "sloop",
+      label: "Sloop & afvoer oude badkamer",
+      help: "Verwijderen en afvoeren van de bestaande badkamer (+€70/m²).",
+      type: "toggle",
+      default: true,
+    },
+    {
+      key: "vloerverwarming",
+      label: "Elektrische vloerverwarming",
+      help: "Comfortabele warme vloer (+€110/m²).",
+      type: "toggle",
+      default: false,
+    },
+    {
+      key: "toilet",
+      label: "Hangend toilet",
+      help: "Inclusief inbouwreservoir.",
+      type: "toggle",
+      default: true,
+    },
+    { key: "wastafel", label: "Wastafelmeubel", type: "toggle", default: true },
+    { key: "inloopdouche", label: "Inloopdouche", type: "toggle", default: true },
+    { key: "ligbad", label: "Ligbad", type: "toggle", default: false },
+  ],
+  estimate: (v) => {
+    const area = num(v.oppervlak);
+    const niveau = str(v.niveau);
+    const perM2 = opt(niveau, { budget: 900, standaard: 1400, luxe: 2200 });
+    const niveauLabel = { budget: "budget", standaard: "standaard", luxe: "luxe" }[niveau] ?? "";
+    const tegel = opt(str(v.tegelwerk), { geen: 0, wanden: 120, wandenvloer: 180 });
+
+    const lines: EstimateLine[] = [
+      {
+        label: `Verbouwing & installatie (${niveauLabel})`,
+        detail: `${area} m² × € ${perM2.toLocaleString("nl-NL")}/m²`,
+        amount: Math.round(perM2 * area),
+      },
+    ];
+    if (tegel > 0)
+      lines.push({ label: "Tegelwerk", detail: `${area} m² × € ${tegel}/m²`, amount: tegel * area });
+    if (v.sloop)
+      lines.push({ label: "Sloop & afvoer", detail: `${area} m² × € 70/m²`, amount: 70 * area });
+    if (v.vloerverwarming)
+      lines.push({ label: "Vloerverwarming", detail: `${area} m² × € 110/m²`, amount: 110 * area });
+    if (v.toilet) lines.push({ label: "Hangend toilet", amount: 450 });
+    if (v.wastafel) lines.push({ label: "Wastafelmeubel", amount: 650 });
+    if (v.inloopdouche) lines.push({ label: "Inloopdouche", amount: 1200 });
+    if (v.ligbad) lines.push({ label: "Ligbad", amount: 1500 });
+
+    let total = lines.reduce((s, l) => s + l.amount, 0);
+    if (total < 1500 && total > 0) {
+      lines.push({ label: "Minimum opdrachttarief", amount: 1500 - total });
+      total = 1500;
+    }
+    return { lines, total, ...band(total, 0.15), unitLabel: `± € ${perM2.toLocaleString("nl-NL")}/m²` };
+  },
+};
+
+export const CALCULATORS: Calculator[] = [stucwerk, schilderwerk, isolatie, badkamer, opbouwUitbouw];
 
 export function getCalculator(slug: string): Calculator | undefined {
   return CALCULATORS.find((c) => c.slug === slug);
