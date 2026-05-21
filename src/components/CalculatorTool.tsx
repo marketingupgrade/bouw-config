@@ -197,6 +197,7 @@ export default function CalculatorTool({ slug }: { slug: string }) {
     amount: estimate.total,
     amountLabel: `${formatEur(estimate.low)} – ${formatEur(estimate.high)}`,
     url: sharePath,
+    measure: calc.slug === "isolatie" ? String(values.type) : undefined,
   };
 
   // Sync state to the URL so the calculation can be bookmarked, resumed and shared.

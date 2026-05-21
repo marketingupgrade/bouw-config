@@ -9,6 +9,7 @@ export interface WishlistItem {
   amount: number; // representative richtprijs (incl. btw)
   amountLabel?: string;
   url: string; // shareable, resumable link
+  measure?: string; // ISDE measure id, for isolation propositions
 }
 
 interface WishlistState {

@@ -319,6 +319,8 @@ const isolatie: Calculator = {
         { id: "bodem", label: "Bodemisolatie", hint: "Kruipruimte", priceHint: "± € 17/m²" },
         { id: "dak", label: "Dakisolatie (binnen)", hint: "Binnenzijde dak", priceHint: "± € 55/m²" },
         { id: "gevel", label: "Gevelisolatie (buiten)", hint: "Buitenzijde + stuc", priceHint: "± € 125/m²" },
+        { id: "hrpp", label: "HR++-glas", hint: "Vervangt enkel/dubbel glas", priceHint: "± € 230/m²" },
+        { id: "triple", label: "Triple glas", hint: "Maximale isolatie", priceHint: "± € 380/m²" },
       ],
     },
     {
@@ -342,10 +344,10 @@ const isolatie: Calculator = {
   estimate: (v) => {
     const area = num(v.oppervlak);
     const type = str(v.type);
-    const base = opt(type, { spouwmuur: 22, vloer: 30, bodem: 17, dak: 55, gevel: 125 });
+    const base = opt(type, { spouwmuur: 22, vloer: 30, bodem: 17, dak: 55, gevel: 125, hrpp: 230, triple: 380 });
     const measure = ISDE_MEASURES[type];
     const subsidiePerM2 = measure?.perM2 ?? 0; // single-measure ISDE rate
-    const saving = opt(type, { spouwmuur: 5, vloer: 4, bodem: 3, dak: 7, gevel: 9 }); // €/m²/jaar indicatief
+    const saving = opt(type, { spouwmuur: 5, vloer: 4, bodem: 3, dak: 7, gevel: 9, hrpp: 8, triple: 11 }); // €/m²/jaar indicatief
 
     const gross = Math.round(base * area);
     const lines: EstimateLine[] = [

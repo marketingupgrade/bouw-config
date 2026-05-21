@@ -80,7 +80,7 @@ export function evaluateGrants(
           ? `€ ${perM2}/m² (verhoogd tarief bij 2+ maatregelen, ISDE ${ISDE_YEAR})`
           : `€ ${perM2}/m² (1 maatregel) — verdubbelt naar € ${m.perM2Multi}/m² bij 2+ maatregelen`,
         conditions: [
-          `Isolatiemateriaal voldoet aan de minimale Rd-waarde van ${m.rd.toLocaleString("nl-NL")} m²·K/W.`,
+          `Isolatie voldoet aan de eis: ${m.requirement}.`,
           "Je vraagt de subsidie binnen 24 maanden na uitvoering aan bij RVO.",
           "Het verhoogde tarief geldt alleen bij twee of meer energiebesparende maatregelen.",
         ],

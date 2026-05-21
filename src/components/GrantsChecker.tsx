@@ -8,7 +8,9 @@ import {
   RVO_SUBSIDY_FINDER,
   type Attestations,
 } from "@/lib/grants";
+import { ISDE_MEASURES } from "@/lib/isde";
 import { formatEur, type Values } from "@/lib/calculators";
+import { useWishlist } from "@/lib/wishlist";
 import { ToggleRow } from "@/components/ui";
 
 const RIJKSBLAUW = "#154273";
@@ -66,7 +68,21 @@ function CriterionRow({ label, met }: { label: string; met: boolean }) {
 
 export default function GrantsChecker({ slug, values }: { slug: string; values: Values }) {
   const [att, setAtt] = useState<Attestations>(DEFAULT_ATTESTATIONS);
-  const grants = evaluateGrants(slug, values, att);
+  const wishlistItems = useWishlist((s) => s.items);
+
+  // Count distinct ISDE-eligible measures the user is pursuing: those already
+  // on the wishlist plus the one currently being calculated. Two or more
+  // automatically unlocks the higher ISDE rate.
+  const measures = new Set<string>();
+  for (const i of wishlistItems) if (i.measure && ISDE_MEASURES[i.measure]) measures.add(i.measure);
+  if (slug === "isolatie" && ISDE_MEASURES[String(values.type)]) measures.add(String(values.type));
+  const autoMulti = measures.size >= 2;
+
+  const effectiveAtt: Attestations = {
+    ...att,
+    tweeMaatregelen: att.tweeMaatregelen || autoMulti,
+  };
+  const grants = evaluateGrants(slug, values, effectiveAtt);
 
   if (grants.length === 0) {
     return (
@@ -109,9 +125,13 @@ export default function GrantsChecker({ slug, values }: { slug: string; values: 
                 />
                 <ToggleRow
                   label="Twee of meer maatregelen"
-                  description="Verhoogd tarief bij 2+ energiebesparende maatregelen"
-                  checked={att.tweeMaatregelen}
-                  onChange={(v) => setAtt((a) => ({ ...a, tweeMaatregelen: v }))}
+                  description={
+                    autoMulti
+                      ? "Automatisch aan: je hebt 2+ isolatiemaatregelen in je wenslijst"
+                      : "Verhoogd tarief bij 2+ energiebesparende maatregelen"
+                  }
+                  checked={effectiveAtt.tweeMaatregelen}
+                  onChange={(v) => !autoMulti && setAtt((a) => ({ ...a, tweeMaatregelen: v }))}
                 />
               </div>
             </div>

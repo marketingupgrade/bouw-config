@@ -79,6 +79,27 @@ test("wishlist collects propositions and requests a combined offer", async ({ pa
   await expect(page.getByText("Bedankt voor je aanvraag!")).toBeVisible({ timeout: 10_000 });
 });
 
+test("HR++/triple glass are ISDE measures with the correct requirement", async ({ page }) => {
+  await page.goto("/calculator/isolatie");
+  await page.getByRole("button", { name: /Triple glas/ }).click();
+  await page.getByRole("switch", { name: /Eigenaar én bewoner/ }).click();
+  await page.getByRole("switch", { name: /Bestaande woning/ }).click();
+  await expect(page.getByText(/Je komt waarschijnlijk in aanmerking/)).toBeVisible();
+  await expect(page.getByText(/U-waarde ≤ 0,7/)).toBeVisible();
+});
+
+test("two insulation measures in the wishlist auto-apply the higher ISDE rate", async ({ page }) => {
+  await page.goto("/calculator/isolatie"); // default: spouwmuur
+  await page.getByRole("button", { name: /Voeg toe aan wenslijst/ }).click();
+  // Switch the current calculation to a different measure -> 2 distinct measures.
+  await page.getByRole("button", { name: "Vloerisolatie" }).click();
+  await expect(page.getByText(/Automatisch aan/)).toBeVisible();
+  await page.getByRole("switch", { name: /Eigenaar én bewoner/ }).click();
+  await page.getByRole("switch", { name: /Bestaande woning/ }).click();
+  // Vloer doubled rate is €14/m²; the higher-rate label must show.
+  await expect(page.getByText(/verhoogd tarief bij 2\+ maatregelen/i)).toBeVisible();
+});
+
 test("lead api rejects invalid email", async ({ page }) => {
   const res = await page.request.post("/api/lead", {
     data: { calculator: "stucwerk", contact: { name: "X", email: "nope" } },

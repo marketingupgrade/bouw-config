@@ -18,15 +18,17 @@ export interface IsdeMeasure {
   minM2: number; // minimum treated surface to qualify
   perM2: number; // € per m² — single measure
   perM2Multi: number; // € per m² — two or more measures (≈ double)
-  rd: number; // minimum Rd insulation value (m²·K/W)
+  requirement: string; // the technical insulation requirement (Rd- or U-waarde)
 }
 
 export const ISDE_MEASURES: Record<string, IsdeMeasure> = {
-  spouwmuur: { id: "spouwmuur", label: "spouwmuurisolatie", minM2: 10, perM2: 8, perM2Multi: 16, rd: 1.1 },
-  bodem: { id: "bodem", label: "bodemisolatie", minM2: 20, perM2: 4, perM2Multi: 8, rd: 3.5 },
-  vloer: { id: "vloer", label: "vloerisolatie", minM2: 20, perM2: 7, perM2Multi: 14, rd: 3.5 },
-  dak: { id: "dak", label: "dakisolatie", minM2: 20, perM2: 15, perM2Multi: 30, rd: 3.5 },
-  gevel: { id: "gevel", label: "gevelisolatie", minM2: 10, perM2: 25, perM2Multi: 50, rd: 3.5 },
+  spouwmuur: { id: "spouwmuur", label: "spouwmuurisolatie", minM2: 10, perM2: 8, perM2Multi: 16, requirement: "Rd ≥ 1,1 m²·K/W" },
+  bodem: { id: "bodem", label: "bodemisolatie", minM2: 20, perM2: 4, perM2Multi: 8, requirement: "Rd ≥ 3,5 m²·K/W" },
+  vloer: { id: "vloer", label: "vloerisolatie", minM2: 20, perM2: 7, perM2Multi: 14, requirement: "Rd ≥ 3,5 m²·K/W" },
+  dak: { id: "dak", label: "dakisolatie", minM2: 20, perM2: 15, perM2Multi: 30, requirement: "Rd ≥ 3,5 m²·K/W" },
+  gevel: { id: "gevel", label: "gevelisolatie", minM2: 10, perM2: 25, perM2Multi: 50, requirement: "Rd ≥ 3,5 m²·K/W" },
+  hrpp: { id: "hrpp", label: "HR++-glas", minM2: 8, perM2: 23, perM2Multi: 46, requirement: "U-waarde ≤ 1,2 W/m²·K, mits het hele kozijn wordt geïsoleerd" },
+  triple: { id: "triple", label: "triple glas", minM2: 8, perM2: 46, perM2Multi: 92, requirement: "U-waarde ≤ 0,7 W/m²·K, met geïsoleerd kozijn (U ≤ 1,5)" },
 };
 
 export const ISDE_URL = "https://www.rvo.nl/subsidies-financiering/isde/woningeigenaren";
