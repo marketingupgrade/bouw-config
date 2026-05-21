@@ -2,6 +2,8 @@
 // Prices are realistic Dutch market ballparks for 2025 and are deliberately
 // kept in this one file so they are trivial to tune without touching UI code.
 
+import { ISDE_MEASURES } from "./isde";
+
 export type FieldType = "number" | "select" | "toggle";
 
 export interface SelectOption {
@@ -341,7 +343,8 @@ const isolatie: Calculator = {
     const area = num(v.oppervlak);
     const type = str(v.type);
     const base = opt(type, { spouwmuur: 22, vloer: 30, bodem: 17, dak: 55, gevel: 125 });
-    const subsidiePerM2 = opt(type, { spouwmuur: 8, vloer: 11, bodem: 7, dak: 23, gevel: 38 });
+    const measure = ISDE_MEASURES[type];
+    const subsidiePerM2 = measure?.perM2 ?? 0; // single-measure ISDE rate
     const saving = opt(type, { spouwmuur: 5, vloer: 4, bodem: 3, dak: 7, gevel: 9 }); // €/m²/jaar indicatief
 
     const gross = Math.round(base * area);
@@ -349,16 +352,22 @@ const isolatie: Calculator = {
       { label: "Isolatie aanbrengen", detail: `${area} m² × € ${base}/m²`, amount: gross },
     ];
     let total = gross;
-    if (v.subsidie) {
+    if (v.subsidie && measure) {
       const sub = Math.round(subsidiePerM2 * area);
-      lines.push({ label: "ISDE-subsidie (indicatief)", detail: `${area} m² × € ${subsidiePerM2}/m²`, amount: -sub });
+      lines.push({
+        label: "ISDE-subsidie (indicatief)",
+        detail: `${area} m² × € ${subsidiePerM2}/m²`,
+        amount: -sub,
+      });
       total = gross - sub;
     }
     const notes = [
       `Geschatte energiebesparing: ± € ${Math.round(saving * area).toLocaleString("nl-NL")} per jaar.`,
     ];
     if (v.subsidie)
-      notes.push("ISDE-subsidie is indicatief; je vraagt deze zelf aan bij RVO en geldt bij minimaal twee maatregelen of voldoende oppervlak.");
+      notes.push(
+        "ISDE-subsidie verdubbelt bij twee of meer maatregelen. Check je exacte recht in de subsidiecheck hieronder.",
+      );
     return { lines, total, ...band(total, 0.15), unitLabel: `± € ${base}/m²`, notes };
   },
 };

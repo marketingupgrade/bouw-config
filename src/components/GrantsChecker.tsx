@@ -107,6 +107,12 @@ export default function GrantsChecker({ slug, values }: { slug: string; values: 
                   checked={att.bestaandeWoning}
                   onChange={(v) => setAtt((a) => ({ ...a, bestaandeWoning: v }))}
                 />
+                <ToggleRow
+                  label="Twee of meer maatregelen"
+                  description="Verhoogd tarief bij 2+ energiebesparende maatregelen"
+                  checked={att.tweeMaatregelen}
+                  onChange={(v) => setAtt((a) => ({ ...a, tweeMaatregelen: v }))}
+                />
               </div>
             </div>
 
@@ -148,7 +154,20 @@ export default function GrantsChecker({ slug, values }: { slug: string; values: 
               )}
             </AnimatePresence>
 
-            {g.footnote && <p className="mt-3 text-xs leading-relaxed text-muted">{g.footnote}</p>}
+            {g.conditions && g.conditions.length > 0 && (
+              <ul className="mt-3 space-y-1">
+                {g.conditions.map((c) => (
+                  <li key={c} className="flex gap-2 text-xs leading-relaxed text-muted">
+                    <span aria-hidden>•</span>
+                    <span>{c}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <p className="mt-3 rounded-lg bg-page p-3 text-xs leading-relaxed text-muted">
+              {g.disclaimer}
+            </p>
 
             <div className="mt-4">
               <GovSource authority={g.authority} url={g.url} />

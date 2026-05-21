@@ -1,14 +1,11 @@
 // Live eligibility checks for Dutch national subsidies, tied to the public
 // schemes administered by RVO on behalf of the Rijksoverheid.
 //
-// Source of truth (always authoritative over the indicative figures here):
-//   ISDE woningeigenaren — https://www.rvo.nl/subsidies-financiering/isde/woningeigenaren
-//   Energiebesparing thuis — https://www.rijksoverheid.nl/onderwerpen/energie-thuis
-//
-// Amounts and minimum surfaces follow the published ISDE rules; they are
-// kept here so they are easy to update when RVO revises the scheme.
+// The ISDE figures live in ./isde.ts and follow the published standaardbedragen.
+// They are indicative: the user applies themselves and RVO is authoritative.
 
 import type { Values } from "./calculators";
+import { ISDE_DISCLAIMER, ISDE_MEASURES, ISDE_URL, ISDE_YEAR } from "./isde";
 
 export interface GrantCriterion {
   label: string;
@@ -25,48 +22,24 @@ export interface GrantResult {
   eligible: boolean;
   estimate?: number;
   estimateLabel?: string;
-  footnote?: string;
+  conditions?: string[];
+  disclaimer: string;
 }
 
 export interface Attestations {
   eigenaarBewoner: boolean;
   bestaandeWoning: boolean;
+  tweeMaatregelen: boolean;
 }
 
 export const DEFAULT_ATTESTATIONS: Attestations = {
   eigenaarBewoner: false,
   bestaandeWoning: false,
+  tweeMaatregelen: false,
 };
 
 // Official RVO subsidy finder, used when no specific scheme applies.
-export const RVO_SUBSIDY_FINDER =
-  "https://www.rvo.nl/subsidies-financiering";
-
-// ISDE isolation rules (woningeigenaren). Minimum surface per measure (m²).
-const ISDE_MIN_M2: Record<string, number> = {
-  spouwmuur: 10,
-  gevel: 10,
-  dak: 20,
-  vloer: 20,
-  bodem: 20,
-};
-
-// Indicative ISDE contribution per m² for a single measure (doubles for 2+).
-const ISDE_PER_M2: Record<string, number> = {
-  spouwmuur: 8,
-  vloer: 11,
-  bodem: 7,
-  dak: 23,
-  gevel: 38,
-};
-
-const ISDE_LABEL: Record<string, string> = {
-  spouwmuur: "spouwmuurisolatie",
-  vloer: "vloerisolatie",
-  bodem: "bodemisolatie",
-  dak: "dakisolatie",
-  gevel: "gevelisolatie",
-};
+export const RVO_SUBSIDY_FINDER = "https://www.rvo.nl/subsidies-financiering";
 
 export function evaluateGrants(
   slug: string,
@@ -76,33 +49,42 @@ export function evaluateGrants(
   if (slug === "isolatie") {
     const type = String(values.type ?? "");
     const area = Number(values.oppervlak ?? 0);
-    const minM2 = ISDE_MIN_M2[type] ?? 10;
-    const perM2 = ISDE_PER_M2[type] ?? 0;
+    const m = ISDE_MEASURES[type];
+    if (!m) return [];
+
+    const perM2 = att.tweeMaatregelen ? m.perM2Multi : m.perM2;
 
     const criteria: GrantCriterion[] = [
       { label: "Je bent eigenaar én bewoner van de woning", met: att.eigenaarBewoner },
       { label: "Het betreft een bestaande woning (geen nieuwbouw)", met: att.bestaandeWoning },
       {
-        label: `Minimaal ${minM2} m² ${ISDE_LABEL[type] ?? "isolatie"} — nu ${area} m²`,
-        met: area >= minM2,
+        label: `Minimaal ${m.minM2} m² ${m.label} — nu ${area} m²`,
+        met: area >= m.minM2,
       },
     ];
     const eligible = criteria.every((c) => c.met);
+    const estimate = eligible ? Math.round(perM2 * area) : undefined;
 
     return [
       {
         id: "isde",
         name: "ISDE — isolatiesubsidie",
         authority: "RVO namens de Rijksoverheid",
-        url: "https://www.rvo.nl/subsidies-financiering/isde/woningeigenaren",
+        url: ISDE_URL,
         summary:
           "Investeringssubsidie duurzame energie en energiebesparing voor het isoleren van bestaande koopwoningen.",
         criteria,
         eligible,
-        estimate: eligible ? Math.round(perM2 * area) : undefined,
-        estimateLabel: `± € ${perM2}/m² — het bedrag verdubbelt bij twee of meer maatregelen`,
-        footnote:
-          "Het isolatiemateriaal moet voldoen aan de minimale Rd-waarde van RVO en je vraagt de subsidie binnen 24 maanden na uitvoering aan. Bedragen zijn indicatief; RVO is leidend.",
+        estimate,
+        estimateLabel: att.tweeMaatregelen
+          ? `€ ${perM2}/m² (verhoogd tarief bij 2+ maatregelen, ISDE ${ISDE_YEAR})`
+          : `€ ${perM2}/m² (1 maatregel) — verdubbelt naar € ${m.perM2Multi}/m² bij 2+ maatregelen`,
+        conditions: [
+          `Isolatiemateriaal voldoet aan de minimale Rd-waarde van ${m.rd.toLocaleString("nl-NL")} m²·K/W.`,
+          "Je vraagt de subsidie binnen 24 maanden na uitvoering aan bij RVO.",
+          "Het verhoogde tarief geldt alleen bij twee of meer energiebesparende maatregelen.",
+        ],
+        disclaimer: ISDE_DISCLAIMER,
       },
     ];
   }
