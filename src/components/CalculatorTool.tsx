@@ -147,13 +147,14 @@ function LeadForm({
         <input name="postcode" placeholder="Postcode" className={inputClass} />
       </div>
       <textarea name="message" rows={3} placeholder="Eventuele toelichting of vragen" className={inputClass} />
-      <button
+      <motion.button
         type="submit"
         disabled={status === "sending"}
-        className="w-full rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-600 disabled:opacity-60"
+        whileTap={{ scale: 0.98 }}
+        className="w-full rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-600 disabled:opacity-60"
       >
         {status === "sending" ? "Versturen…" : "Vraag vrijblijvend offerte aan"}
-      </button>
+      </motion.button>
       {status === "error" && (
         <p className="text-center text-sm text-accent-600">
           Er ging iets mis. Probeer het opnieuw of bel ons.

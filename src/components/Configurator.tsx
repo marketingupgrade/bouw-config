@@ -29,13 +29,16 @@ function StepNav() {
         const done = i < step;
         return (
           <li key={label} className="flex items-center gap-2">
-            <button
+            <motion.button
               type="button"
               onClick={() => goTo(i as 0 | 1 | 2)}
+              whileTap={{ scale: 0.95 }}
               className="flex items-center gap-2"
             >
-              <span
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition ${
+              <motion.span
+                animate={{ scale: active ? 1.12 : 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                   active
                     ? "bg-accent text-white"
                     : done
@@ -44,7 +47,7 @@ function StepNav() {
                 }`}
               >
                 {i + 1}
-              </span>
+              </motion.span>
               <span
                 className={`hidden text-sm font-medium sm:inline ${
                   active ? "text-ink" : "text-muted"
@@ -52,7 +55,7 @@ function StepNav() {
               >
                 {label}
               </span>
-            </button>
+            </motion.button>
             {i < STEPS.length - 1 && <span className="h-px w-5 bg-line sm:w-8" />}
           </li>
         );
@@ -110,16 +113,24 @@ export default function Configurator() {
           {/* Mode tabs */}
           <div className="absolute left-3 top-3 z-20 inline-flex rounded-lg border border-line bg-surface/90 p-0.5 backdrop-blur">
             {(["3d", "locatie"] as ViewMode[]).map((m) => (
-              <button
+              <motion.button
                 key={m}
                 type="button"
                 onClick={() => setView(m)}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                  view === m ? "bg-accent text-white" : "text-ink-soft hover:text-accent"
+                whileTap={{ scale: 0.95 }}
+                className={`relative rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  view === m ? "text-white" : "text-ink-soft hover:text-accent"
                 }`}
               >
+                {view === m && (
+                  <motion.span
+                    layoutId="viewmode-pill"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    className="absolute inset-0 -z-10 rounded-md bg-accent"
+                  />
+                )}
                 {m === "3d" ? "3D-model" : "Op locatie"}
-              </button>
+              </motion.button>
             ))}
           </div>
 
@@ -173,22 +184,24 @@ export default function Configurator() {
               <p className="text-xs text-muted">{price.area.toFixed(1)} m²</p>
             </div>
             <div className="flex gap-3">
-              <button
+              <motion.button
                 type="button"
                 onClick={prev}
                 disabled={step === 0}
-                className="rounded-lg border border-line px-4 py-2.5 text-sm font-semibold text-ink-soft transition hover:border-ink-soft disabled:opacity-40"
+                whileTap={{ scale: 0.97 }}
+                className="rounded-lg border border-line px-4 py-2.5 text-sm font-semibold text-ink-soft transition-colors hover:border-ink-soft disabled:opacity-40"
               >
                 Terug
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
                 onClick={next}
                 disabled={isLast}
-                className="flex-1 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-40"
+                whileTap={{ scale: 0.97 }}
+                className="flex-1 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {isLast ? "Vul het formulier hieronder in" : "Volgende stap"}
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>

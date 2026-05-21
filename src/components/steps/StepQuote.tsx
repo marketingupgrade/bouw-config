@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { CLADDINGS, FRAME_COLORS, HEATINGS, INTERIORS, MODELS, ROOFS } from "@/lib/config";
 import { computePrice, formatEur } from "@/lib/pricing";
 import { useConfigurator } from "@/lib/store";
@@ -105,13 +106,18 @@ function LeadForm() {
 
   if (status === "done") {
     return (
-      <div className="rounded-lg border border-accent bg-accent-50 p-6 text-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+        className="rounded-lg border border-accent bg-accent-50 p-6 text-center"
+      >
         <h3 className="text-lg font-semibold text-ink">Bedankt voor je aanvraag!</h3>
         <p className="mt-2 text-sm text-ink-soft">
           We hebben je configuratie en richtprijs ontvangen en nemen binnen één
           werkdag contact met je op voor een vrijblijvende offerte.
         </p>
-      </div>
+      </motion.div>
     );
   }
 
@@ -132,13 +138,14 @@ function LeadForm() {
         placeholder="Eventuele toelichting of vragen"
         className={inputClass}
       />
-      <button
+      <motion.button
         type="submit"
         disabled={status === "sending"}
-        className="w-full rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-600 disabled:opacity-60"
+        whileTap={{ scale: 0.98 }}
+        className="w-full rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-600 disabled:opacity-60"
       >
         {status === "sending" ? "Versturen…" : "Vraag vrijblijvend offerte aan"}
-      </button>
+      </motion.button>
       {status === "error" && (
         <p className="text-center text-sm text-accent-600">
           Er ging iets mis. Probeer het opnieuw of bel ons.

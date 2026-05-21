@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { describeConfiguration } from "@/lib/pricing";
 import { useConfigurator } from "@/lib/store";
 
@@ -106,10 +106,12 @@ export default function LocationMockup() {
           <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             Jouw foto
           </span>
-          <button
+          <motion.button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border border-dashed border-line bg-page text-center transition hover:border-accent"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border border-dashed border-line bg-page text-center transition-colors hover:border-accent"
           >
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -121,7 +123,7 @@ export default function LocationMockup() {
                 <span className="text-xs">(JPG of PNG)</span>
               </span>
             )}
-          </button>
+          </motion.button>
           <input
             ref={fileRef}
             type="file"
@@ -165,25 +167,40 @@ export default function LocationMockup() {
         </div>
       </div>
 
-      {error && <p className="mt-3 text-sm text-accent-600">{error}</p>}
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mt-3 text-sm text-accent-600"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <button
+        <motion.button
           type="button"
           onClick={generate}
           disabled={!photo || status === "busy"}
+          whileTap={{ scale: 0.97 }}
           className={`${btn} bg-accent text-white hover:bg-accent-600`}
         >
           {result ? "Opnieuw genereren" : "Genereer mockup"}
-        </button>
+        </motion.button>
         {result && (
-          <a
+          <motion.a
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.97 }}
             href={result}
             download="aanbouw-mockup.png"
             className={`${btn} border border-line text-ink-soft hover:border-ink-soft`}
           >
             Download
-          </a>
+          </motion.a>
         )}
       </div>
     </div>

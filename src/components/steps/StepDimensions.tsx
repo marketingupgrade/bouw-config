@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { DIMENSIONS, MODELS } from "@/lib/config";
 import { computeArea } from "@/lib/pricing";
 import { useConfigurator } from "@/lib/store";
@@ -58,9 +59,15 @@ export default function StepDimensions() {
 
       <div className="flex items-center justify-between rounded-lg bg-accent-50 px-4 py-3">
         <span className="text-sm font-medium text-ink-soft">Vloeroppervlak</span>
-        <span className="text-lg font-semibold text-accent tabular-nums">
+        <motion.span
+          key={area.toFixed(1)}
+          initial={{ scale: 1.12 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 500, damping: 22 }}
+          className="text-lg font-semibold text-accent tabular-nums"
+        >
           {area.toFixed(1)} m²
-        </span>
+        </motion.span>
       </div>
     </div>
   );

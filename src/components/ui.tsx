@@ -1,6 +1,11 @@
 "use client";
 
+import { motion } from "motion/react";
 import { EXTRA_BOUNDS } from "@/lib/config";
+
+// Shared interaction feel for tappable controls.
+const tap = { scale: 0.97 };
+const springy = { type: "spring" as const, stiffness: 400, damping: 25 };
 
 export function Field({
   label,
@@ -42,11 +47,14 @@ export function OptionCard({
   price?: string;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`group flex w-full items-start gap-3 rounded-lg border p-3 text-left transition ${
+      whileTap={tap}
+      whileHover={{ y: -2 }}
+      transition={springy}
+      className={`group flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
         selected
           ? "border-accent bg-accent-50 ring-1 ring-accent"
           : "border-line bg-surface hover:border-ink-soft"
@@ -67,7 +75,7 @@ export function OptionCard({
           <span className="mt-0.5 block text-xs leading-relaxed text-muted">{description}</span>
         )}
       </span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -98,7 +106,15 @@ export function Slider({
         className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-line accent-accent"
       />
       <div className="flex w-24 shrink-0 items-baseline justify-end gap-1 tabular-nums">
-        <span className="text-lg font-semibold text-ink">{value.toFixed(1)}</span>
+        <motion.span
+          key={value}
+          initial={{ scale: 1.18, color: "var(--color-accent, #3f6f3f)" }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 500, damping: 22 }}
+          className="text-lg font-semibold text-ink"
+        >
+          {value.toFixed(1)}
+        </motion.span>
         <span className="text-xs text-muted">{suffix}</span>
       </div>
     </div>
@@ -119,25 +135,35 @@ export function Stepper({
   const set = (v: number) => onChange(Math.max(min, Math.min(max, v)));
   return (
     <div className="inline-flex items-center rounded-lg border border-line bg-surface">
-      <button
+      <motion.button
         type="button"
         onClick={() => set(value - 1)}
         disabled={value <= min}
-        className="flex h-9 w-9 items-center justify-center text-lg text-ink-soft transition hover:text-accent disabled:opacity-30"
+        whileTap={{ scale: 0.8 }}
+        className="flex h-9 w-9 items-center justify-center text-lg text-ink-soft transition-colors hover:text-accent disabled:opacity-30"
         aria-label="Minder"
       >
         −
-      </button>
-      <span className="w-8 text-center text-sm font-semibold tabular-nums">{value}</span>
-      <button
+      </motion.button>
+      <motion.span
+        key={value}
+        initial={{ scale: 1.25 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 600, damping: 20 }}
+        className="w-8 text-center text-sm font-semibold tabular-nums"
+      >
+        {value}
+      </motion.span>
+      <motion.button
         type="button"
         onClick={() => set(value + 1)}
         disabled={value >= max}
-        className="flex h-9 w-9 items-center justify-center text-lg text-ink-soft transition hover:text-accent disabled:opacity-30"
+        whileTap={{ scale: 0.8 }}
+        className="flex h-9 w-9 items-center justify-center text-lg text-ink-soft transition-colors hover:text-accent disabled:opacity-30"
         aria-label="Meer"
       >
         +
-      </button>
+      </motion.button>
     </div>
   );
 }
@@ -206,11 +232,12 @@ export function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
+      whileTap={{ scale: 0.99 }}
       className="flex w-full items-center justify-between gap-3 border-t border-line py-3 text-left first:border-t-0"
     >
       <span>
@@ -218,17 +245,17 @@ export function ToggleRow({
         {description && <span className="block text-xs text-muted">{description}</span>}
       </span>
       <span
-        className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
           checked ? "bg-accent" : "bg-line"
         }`}
       >
-        <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
-            checked ? "left-[22px]" : "left-0.5"
-          }`}
+        <motion.span
+          className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow"
+          animate={{ x: checked ? 20 : 0 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
         />
       </span>
-    </button>
+    </motion.button>
   );
 }
 
