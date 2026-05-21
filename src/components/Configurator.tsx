@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useState } from "react";
 import { computePrice, formatEur } from "@/lib/pricing";
 import { STEPS, useConfigurator } from "@/lib/store";
@@ -71,17 +72,17 @@ export default function Configurator() {
     <div className="flex min-h-screen flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-line bg-surface px-5 lg:px-8">
         <div className="flex items-baseline gap-3">
-          <span className="text-base font-semibold uppercase tracking-[0.18em] text-accent">
+          <Link href="/" className="text-base font-semibold uppercase tracking-[0.18em] text-accent">
             Bureau Wijnschenk
-          </span>
+          </Link>
           <span className="hidden text-sm text-muted sm:inline">Configurator</span>
         </div>
-        <a
-          href="#"
-          className="hidden text-sm font-medium text-muted hover:text-accent sm:inline"
+        <Link
+          href="/"
+          className="hidden text-sm font-medium text-muted transition hover:text-accent sm:inline"
         >
-          Hulp nodig?
-        </a>
+          ← Alle calculators
+        </Link>
       </header>
 
       <div className="flex flex-1 flex-col lg:flex-row">

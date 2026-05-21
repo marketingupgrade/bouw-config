@@ -142,6 +142,39 @@ export function Stepper({
   );
 }
 
+export function NumberInput({
+  value,
+  min,
+  max,
+  step,
+  unit,
+  onChange,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit?: string;
+  onChange: (v: number) => void;
+}) {
+  const clamp = (v: number) => Math.max(min, Math.min(max, v));
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-line bg-surface px-3 focus-within:border-accent focus-within:ring-1 focus-within:ring-accent">
+      <input
+        type="number"
+        inputMode="decimal"
+        min={min}
+        max={max}
+        step={step}
+        value={Number.isFinite(value) ? value : ""}
+        onChange={(e) => onChange(clamp(Number(e.target.value)))}
+        className="w-full bg-transparent py-2.5 text-sm text-ink outline-none tabular-nums"
+      />
+      {unit && <span className="shrink-0 text-sm text-muted">{unit}</span>}
+    </div>
+  );
+}
+
 export function CounterRow({
   label,
   value,
