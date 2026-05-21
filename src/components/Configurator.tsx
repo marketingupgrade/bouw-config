@@ -1,11 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import { computePrice, formatEur } from "@/lib/pricing";
 import { STEPS, useConfigurator } from "@/lib/store";
 import StepDimensions from "@/components/steps/StepDimensions";
 import StepOptions from "@/components/steps/StepOptions";
 import StepQuote from "@/components/steps/StepQuote";
+import LocationMockup from "@/components/LocationMockup";
 
 const Viewer3D = dynamic(() => import("@/components/Viewer3D"), {
   ssr: false,
@@ -57,10 +59,13 @@ function StepNav() {
   );
 }
 
+type ViewMode = "3d" | "locatie";
+
 export default function Configurator() {
   const { step, next, prev, config } = useConfigurator();
   const price = computePrice(config);
   const isLast = step === 2;
+  const [view, setView] = useState<ViewMode>("3d");
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -82,10 +87,36 @@ export default function Configurator() {
       <div className="flex flex-1 flex-col lg:flex-row">
         {/* Viewer */}
         <div className="relative h-[42vh] min-h-[280px] bg-page lg:h-auto lg:flex-1">
+          {/* Canvas stays mounted under any overlay so a snapshot can be captured. */}
           <Viewer3D />
-          <div className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-surface/85 px-3 py-1.5 text-xs text-muted backdrop-blur">
-            Sleep om te draaien · scroll om te zoomen
+
+          {view === "locatie" && (
+            <div className="absolute inset-0 z-10 bg-surface">
+              <LocationMockup />
+            </div>
+          )}
+
+          {/* Mode tabs */}
+          <div className="absolute left-3 top-3 z-20 inline-flex rounded-lg border border-line bg-surface/90 p-0.5 backdrop-blur">
+            {(["3d", "locatie"] as ViewMode[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setView(m)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                  view === m ? "bg-accent text-white" : "text-ink-soft hover:text-accent"
+                }`}
+              >
+                {m === "3d" ? "3D-model" : "Op locatie"}
+              </button>
+            ))}
           </div>
+
+          {view === "3d" && (
+            <div className="pointer-events-none absolute bottom-3 left-3 z-20 rounded-md bg-surface/85 px-3 py-1.5 text-xs text-muted backdrop-blur">
+              Sleep om te draaien · scroll om te zoomen
+            </div>
+          )}
         </div>
 
         {/* Panel */}

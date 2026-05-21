@@ -1,10 +1,12 @@
 import {
   CLADDINGS,
+  FRAME_COLORS,
   HEATINGS,
   INTERIORS,
   MODELS,
   PRICES,
   ROOFS,
+  TERRAS_DEPTH,
   type Configuration,
 } from "./config";
 
@@ -93,6 +95,27 @@ export function computePrice(config: Configuration): PriceBreakdown {
     });
   }
 
+  if (config.dakramen > 0) {
+    lines.push({
+      label: "Dakramen",
+      detail: `${config.dakramen} × € ${PRICES.dakraam.toLocaleString("nl-NL")}`,
+      amount: config.dakramen * PRICES.dakraam,
+    });
+  }
+
+  if (config.luifel) {
+    lines.push({ label: "Luifel boven schuifpui", amount: PRICES.luifel });
+  }
+
+  if (config.terras) {
+    const terrasArea = config.width * TERRAS_DEPTH;
+    lines.push({
+      label: "Houten terras",
+      detail: `${terrasArea.toFixed(1)} m² × € ${PRICES.terrasPerM2}/m²`,
+      amount: Math.round(terrasArea * PRICES.terrasPerM2),
+    });
+  }
+
   if (heating.price > 0) {
     lines.push({ label: heating.name, amount: heating.price });
   }
@@ -141,4 +164,28 @@ export function formatEur(amount: number): string {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+/** Plain-language description of the configured extension, for the AI mockup prompt. */
+export function describeConfiguration(config: Configuration): string {
+  const model = byId(MODELS, config.model);
+  const cladding = byId(CLADDINGS, config.cladding);
+  const roof = byId(ROOFS, config.roof);
+  const frame = byId(FRAME_COLORS, config.frameColor);
+
+  const parts = [
+    `a modern prefab home extension (${model.name.toLowerCase()})`,
+    `${config.width.toFixed(1)} m wide, ${config.depth.toFixed(1)} m deep and ${config.height.toFixed(1)} m high`,
+    `with ${cladding.name} facade cladding`,
+    `a ${roof.name.toLowerCase()}`,
+    `${frame.name.toLowerCase()} window frames`,
+  ];
+  if (config.schuifpuien > 0)
+    parts.push(`${config.schuifpuien} large glazed sliding door(s) across the front`);
+  if (config.ramen > 0) parts.push(`${config.ramen} fixed window(s)`);
+  if (config.dakramen > 0) parts.push(`${config.dakramen} roof skylight(s)`);
+  if (config.luifel) parts.push("a canopy over the sliding doors");
+  if (config.terras) parts.push("an adjoining wooden deck");
+
+  return parts.join(", ") + ".";
 }

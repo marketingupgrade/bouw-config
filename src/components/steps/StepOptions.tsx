@@ -3,10 +3,12 @@
 import {
   CLADDINGS,
   EXTRA_BOUNDS,
+  FRAME_COLORS,
   HEATINGS,
   INTERIORS,
   PRICES,
   ROOFS,
+  TERRAS_DEPTH,
 } from "@/lib/config";
 import { formatEur } from "@/lib/pricing";
 import { useConfigurator } from "@/lib/store";
@@ -61,6 +63,20 @@ export default function StepOptions() {
         </OptionGrid>
       </Field>
 
+      <Field label="Kozijnkleur">
+        <OptionGrid>
+          {FRAME_COLORS.map((f) => (
+            <OptionCard
+              key={f.id}
+              selected={config.frameColor === f.id}
+              onClick={() => set("frameColor", f.id)}
+              title={f.name}
+              swatch={f.color}
+            />
+          ))}
+        </OptionGrid>
+      </Field>
+
       <Field label="Beglazing">
         <div className="rounded-lg border border-line bg-surface px-4">
           <CounterRow
@@ -74,6 +90,12 @@ export default function StepOptions() {
             value={config.ramen}
             bounds={EXTRA_BOUNDS.ramen}
             onChange={(v) => set("ramen", v)}
+          />
+          <CounterRow
+            label={`Dakramen (${formatEur(PRICES.dakraam)})`}
+            value={config.dakramen}
+            bounds={EXTRA_BOUNDS.dakramen}
+            onChange={(v) => set("dakramen", v)}
           />
         </div>
       </Field>
@@ -121,6 +143,18 @@ export default function StepOptions() {
             value={config.spots}
             bounds={EXTRA_BOUNDS.spots}
             onChange={(v) => set("spots", v)}
+          />
+          <ToggleRow
+            label="Luifel boven schuifpui"
+            description={`Overstek voor schaduw en regenbescherming — ${formatEur(PRICES.luifel)}`}
+            checked={config.luifel}
+            onChange={(v) => set("luifel", v)}
+          />
+          <ToggleRow
+            label="Houten terras"
+            description={`Vlonder aan de voorzijde (${TERRAS_DEPTH} m diep) — ${formatEur(PRICES.terrasPerM2)}/m²`}
+            checked={config.terras}
+            onChange={(v) => set("terras", v)}
           />
           <ToggleRow
             label="Buitenkraan"

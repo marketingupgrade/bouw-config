@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CLADDINGS, HEATINGS, INTERIORS, MODELS, ROOFS } from "@/lib/config";
+import { CLADDINGS, FRAME_COLORS, HEATINGS, INTERIORS, MODELS, ROOFS } from "@/lib/config";
 import { computePrice, formatEur } from "@/lib/pricing";
 import { useConfigurator } from "@/lib/store";
 
@@ -15,10 +15,23 @@ function Summary() {
     ["Afmetingen", `${config.width.toFixed(1)} × ${config.depth.toFixed(1)} × ${config.height.toFixed(1)} m`],
     ["Gevelbekleding", name(CLADDINGS, config.cladding)],
     ["Dak", name(ROOFS, config.roof)],
-    ["Beglazing", `${config.schuifpuien} schuifpui · ${config.ramen} ramen`],
+    ["Kozijnkleur", name(FRAME_COLORS, config.frameColor)],
+    ["Beglazing", `${config.schuifpuien} schuifpui · ${config.ramen} ramen · ${config.dakramen} dakramen`],
     ["Verwarming", name(HEATINGS, config.heating)],
     ["Interieur", name(INTERIORS, config.interior)],
-    ["Extra's", `${config.stopcontacten} stopcontacten · ${config.spots} spots${config.buitenkraan ? " · buitenkraan" : ""}${config.zonwering ? " · zonwering" : ""}`],
+    [
+      "Extra's",
+      [
+        `${config.stopcontacten} stopcontacten`,
+        `${config.spots} spots`,
+        config.luifel ? "luifel" : "",
+        config.terras ? "terras" : "",
+        config.buitenkraan ? "buitenkraan" : "",
+        config.zonwering ? "zonwering" : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ],
   ];
   return (
     <dl className="divide-y divide-line rounded-lg border border-line bg-surface">

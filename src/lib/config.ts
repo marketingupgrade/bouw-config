@@ -6,6 +6,13 @@ export type CladdingId = "cedar" | "thermo" | "trespa" | "stucwerk";
 export type RoofId = "epdm" | "sedum" | "lessenaar";
 export type HeatingId = "geen" | "vloer" | "cv";
 export type InteriorId = "casco" | "standaard" | "luxe";
+export type FrameColorId = "antraciet" | "zwart" | "wit" | "creme";
+
+export interface FrameColorOption {
+  id: FrameColorId;
+  name: string;
+  color: string;
+}
 
 export interface ModelOption {
   id: ModelId;
@@ -166,15 +173,28 @@ export const INTERIORS: InteriorOption[] = [
   },
 ];
 
+export const FRAME_COLORS: FrameColorOption[] = [
+  { id: "antraciet", name: "Antraciet", color: "#2b2f33" },
+  { id: "zwart", name: "Zwart", color: "#121417" },
+  { id: "wit", name: "Wit", color: "#f1f1ee" },
+  { id: "creme", name: "Crème", color: "#d9cdb4" },
+];
+
 // Unit prices for openings and finishing extras.
 export const PRICES = {
   schuifpui: 3200, // per glazed sliding-door set (schuifpui)
   raam: 650, // per fixed window
+  dakraam: 850, // per skylight
   stopcontact: 55, // per extra socket
   spot: 75, // per recessed ceiling spot
   buitenkraan: 220,
   zonwering: 1400, // screens (one-off package)
+  luifel: 1200, // canopy / overhang over the front glazing
+  terrasPerM2: 215, // wooden deck, per m²
 } as const;
+
+// Wooden deck depth (metres) projecting from the front facade.
+export const TERRAS_DEPTH = 1.5;
 
 // Dimension bounds (metres).
 export const DIMENSIONS = {
@@ -186,6 +206,7 @@ export const DIMENSIONS = {
 export const EXTRA_BOUNDS = {
   schuifpuien: { min: 0, max: 3 },
   ramen: { min: 0, max: 6 },
+  dakramen: { min: 0, max: 4 },
   stopcontacten: { min: 0, max: 12 },
   spots: { min: 0, max: 16 },
 } as const;
@@ -197,14 +218,18 @@ export interface Configuration {
   height: number;
   cladding: CladdingId;
   roof: RoofId;
+  frameColor: FrameColorId;
   heating: HeatingId;
   interior: InteriorId;
   schuifpuien: number;
   ramen: number;
+  dakramen: number;
   stopcontacten: number;
   spots: number;
   buitenkraan: boolean;
   zonwering: boolean;
+  luifel: boolean;
+  terras: boolean;
 }
 
 export const DEFAULT_CONFIG: Configuration = {
@@ -214,12 +239,16 @@ export const DEFAULT_CONFIG: Configuration = {
   height: DIMENSIONS.height.default,
   cladding: "cedar",
   roof: "epdm",
+  frameColor: "antraciet",
   heating: "vloer",
   interior: "standaard",
   schuifpuien: 1,
   ramen: 1,
+  dakramen: 0,
   stopcontacten: 4,
   spots: 6,
   buitenkraan: false,
   zonwering: false,
+  luifel: false,
+  terras: false,
 };
