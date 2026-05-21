@@ -9,10 +9,13 @@ import {
   formatEur,
   getCalculator,
   labelFor,
+  summarizeValues,
   type Calculator,
   type SelectField,
   type Values,
 } from "@/lib/calculators";
+import GrantsChecker from "@/components/GrantsChecker";
+import AddToWishlist from "@/components/AddToWishlist";
 import {
   CopyLinkButton,
   Field,
@@ -184,6 +187,18 @@ export default function CalculatorTool({ slug }: { slug: string }) {
 
   const estimate = useMemo(() => calc.estimate(values), [calc, values]);
 
+  const query = encodeValues(calc, values);
+  const sharePath = query ? `/calculator/${calc.slug}?${query}` : `/calculator/${calc.slug}`;
+  const wishItem = {
+    id: sharePath,
+    kind: "calculator" as const,
+    title: calc.title,
+    summary: summarizeValues(calc, values),
+    amount: estimate.total,
+    amountLabel: `${formatEur(estimate.low)} – ${formatEur(estimate.high)}`,
+    url: sharePath,
+  };
+
   // Sync state to the URL so the calculation can be bookmarked, resumed and shared.
   const firstRun = useRef(true);
   useEffect(() => {
@@ -286,8 +301,13 @@ export default function CalculatorTool({ slug }: { slug: string }) {
             </AnimatePresence>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-col gap-2">
+            <AddToWishlist item={wishItem} className="w-full" />
             <CopyLinkButton className="w-full justify-center" />
+          </div>
+
+          <div className="mt-6">
+            <GrantsChecker slug={calc.slug} values={values} />
           </div>
 
           <div className="mt-6">

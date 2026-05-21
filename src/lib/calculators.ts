@@ -92,6 +92,19 @@ export function labelFor(field: SelectField, id: string): string {
   return field.options.find((o) => o.id === id)?.label ?? id;
 }
 
+// Short human-readable summary of the chosen values, for wishlist items.
+export function summarizeValues(calc: Calculator, values: Values): string {
+  const parts: string[] = [];
+  for (const f of calc.fields) {
+    const v = values[f.key];
+    if (f.type === "select") parts.push(labelFor(f, String(v)));
+    else if (f.type === "number") {
+      if (Number(v) > 0) parts.push(`${v}${f.unit ? ` ${f.unit}` : ""}`);
+    } else if (v) parts.push(f.label);
+  }
+  return parts.join(" · ");
+}
+
 // --- modules -------------------------------------------------------------
 
 const stucwerk: Calculator = {

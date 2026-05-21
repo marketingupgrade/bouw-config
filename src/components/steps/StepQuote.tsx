@@ -4,7 +4,9 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { CLADDINGS, FRAME_COLORS, HEATINGS, INTERIORS, MODELS, ROOFS } from "@/lib/config";
 import { computePrice, formatEur } from "@/lib/pricing";
+import { encodeConfig } from "@/lib/share";
 import { useConfigurator } from "@/lib/store";
+import AddToWishlist from "@/components/AddToWishlist";
 
 const name = <T extends { id: string; name: string }>(items: T[], id: string) =>
   items.find((i) => i.id === id)?.name ?? "—";
@@ -159,6 +161,23 @@ function LeadForm() {
   );
 }
 
+function WishlistAction() {
+  const config = useConfigurator((s) => s.config);
+  const price = computePrice(config);
+  const query = encodeConfig(config);
+  const path = query ? `/aanbouw?${query}` : "/aanbouw";
+  const item = {
+    id: path,
+    kind: "aanbouw" as const,
+    title: `Aanbouw — ${name(MODELS, config.model)}`,
+    summary: `${config.width.toFixed(1)}×${config.depth.toFixed(1)} m · ${name(CLADDINGS, config.cladding)} · ${name(ROOFS, config.roof)}`,
+    amount: price.total,
+    amountLabel: formatEur(price.total),
+    url: path,
+  };
+  return <AddToWishlist item={item} className="w-full" />;
+}
+
 export default function StepQuote() {
   return (
     <div className="space-y-7">
@@ -170,6 +189,7 @@ export default function StepQuote() {
         <h3 className="mb-3 text-sm font-semibold text-ink">Prijsopbouw</h3>
         <Breakdown />
       </div>
+      <WishlistAction />
       <div>
         <h3 className="mb-3 text-sm font-semibold text-ink">Offerte aanvragen</h3>
         <LeadForm />

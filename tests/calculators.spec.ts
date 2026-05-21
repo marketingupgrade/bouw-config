@@ -52,9 +52,43 @@ test("configurator state round-trips through a shared link", async ({ page }) =>
   await expect(page.getByRole("switch", { name: /Houten terras/ })).toHaveAttribute("aria-checked", "true");
 });
 
+test("isolatie grants checker turns positive when ISDE criteria are met", async ({ page }) => {
+  await page.goto("/calculator/isolatie");
+  await expect(page.getByText(/Voldoe aan alle voorwaarden/)).toBeVisible();
+  await page.getByRole("switch", { name: /Eigenaar én bewoner/ }).click();
+  await page.getByRole("switch", { name: /Bestaande woning/ }).click();
+  await expect(page.getByText(/Je komt waarschijnlijk in aanmerking/)).toBeVisible();
+  await expect(page.getByRole("link", { name: /Bron: RVO/ })).toHaveAttribute("href", /rvo\.nl/);
+});
+
+test("wishlist collects propositions and requests a combined offer", async ({ page }) => {
+  await page.goto("/calculator/stucwerk");
+  await page.getByRole("button", { name: /Voeg toe aan wenslijst/ }).click();
+  await expect(page.getByRole("button", { name: /In wenslijst/ })).toBeVisible();
+
+  // Add a second, different proposition; the persisted list carries over.
+  await page.goto("/calculator/isolatie");
+  await page.getByRole("button", { name: /Voeg toe aan wenslijst/ }).click();
+
+  await page.getByRole("button", { name: /Wenslijst/ }).click();
+  const drawer = page.getByTestId("wishlist-drawer");
+  await expect(drawer).toBeVisible();
+  await drawer.getByPlaceholder("Naam").fill("Comb Klant");
+  await drawer.getByPlaceholder("E-mailadres").fill("comb@example.nl");
+  await drawer.getByRole("button", { name: "Vraag offerte aan" }).click();
+  await expect(page.getByText("Bedankt voor je aanvraag!")).toBeVisible({ timeout: 10_000 });
+});
+
 test("lead api rejects invalid email", async ({ page }) => {
   const res = await page.request.post("/api/lead", {
     data: { calculator: "stucwerk", contact: { name: "X", email: "nope" } },
   });
   expect(res.status()).toBe(422);
+});
+
+test("wishlist api rejects empty or unauthenticated requests", async ({ page }) => {
+  const bad = await page.request.post("/api/wishlist", {
+    data: { contact: { name: "X", email: "nope" }, items: [] },
+  });
+  expect(bad.status()).toBe(422);
 });
