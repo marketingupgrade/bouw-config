@@ -265,7 +265,7 @@ export default function Viewer3D() {
       dpr={[1, 2]}
       camera={{ position: [span * 1.4, config.height * 1.3, span * 1.6], fov: 45 }}
     >
-      <color attach="background" args={["#eef1f4"]} />
+      <color attach="background" args={["#dfe7e0"]} />
       <hemisphereLight intensity={0.5} groundColor="#b9b29e" />
       <directionalLight
         position={[6, 9, 5]}
@@ -293,9 +293,9 @@ export default function Viewer3D() {
         args={[40, 40]}
         cellSize={1}
         cellThickness={0.6}
-        cellColor="#c7ccd1"
+        cellColor="#bcc9bd"
         sectionSize={5}
-        sectionColor="#aeb4ba"
+        sectionColor="#a6b8a8"
         fadeDistance={32}
         infiniteGrid
       />

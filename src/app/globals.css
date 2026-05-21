@@ -5,17 +5,19 @@
   edit the values below — every component reads from these.
 */
 @theme {
-  --color-ink: #16181d;
-  --color-ink-soft: #3a3f47;
-  --color-muted: #6b7079;
-  --color-page: #f4f2ed;
+  --color-ink: #19211d;
+  --color-ink-soft: #36413a;
+  --color-muted: #5f6b63;
+  --color-page: #eef1ed;
   --color-surface: #ffffff;
-  --color-line: #e4e0d7;
-  --color-accent: #c0502b;
-  --color-accent-600: #a8431f;
-  --color-accent-50: #f7ece7;
+  --color-line: #d9e0d9;
+  --color-accent: #1f4a37;
+  --color-accent-600: #163729;
+  --color-accent-50: #e7efe9;
+  --color-sage: #b1c4b4;
+  --color-sage-soft: #cdd9cd;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
