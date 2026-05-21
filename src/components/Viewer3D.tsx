@@ -1,13 +1,8 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { useMemo } from "react";
 import { Canvas, type ThreeElements } from "@react-three/fiber";
-import {
-  ContactShadows,
-  Environment,
-  OrbitControls,
-  Grid,
-} from "@react-three/drei";
+import { ContactShadows, OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import {
   CLADDINGS,
@@ -30,14 +25,12 @@ function Glass(props: ThreeElements["mesh"]) {
     <mesh {...props}>
       <boxGeometry />
       <meshPhysicalMaterial
-        color="#cfe3ec"
-        transmission={0.95}
-        thickness={0.05}
-        roughness={0.05}
-        ior={1.4}
+        color="#bcd4dd"
+        roughness={0.12}
+        metalness={0.1}
         transparent
-        opacity={0.6}
-        metalness={0}
+        opacity={0.45}
+        reflectivity={0.4}
       />
     </mesh>
   );
@@ -262,25 +255,24 @@ export default function Viewer3D() {
   return (
     <Canvas
       shadows
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
       camera={{ position: [span * 1.4, config.height * 1.3, span * 1.6], fov: 45 }}
     >
       <color attach="background" args={["#dfe7e0"]} />
-      <hemisphereLight intensity={0.5} groundColor="#b9b29e" />
+      <hemisphereLight intensity={0.7} groundColor="#9aa893" color="#ffffff" />
+      <ambientLight intensity={0.35} />
       <directionalLight
         position={[6, 9, 5]}
-        intensity={2}
+        intensity={2.1}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-12}
         shadow-camera-right={12}
         shadow-camera-top={12}
         shadow-camera-bottom={-12}
       />
-      <Suspense fallback={null}>
-        <Building config={config} />
-        <Environment preset="city" />
-      </Suspense>
+      <directionalLight position={[-5, 4, -3]} intensity={0.5} />
+      <Building config={config} />
       <ContactShadows
         position={[0, -0.09, 0]}
         opacity={0.45}

@@ -105,7 +105,7 @@ export default function Configurator() {
             <div className="mb-3 flex items-end justify-between">
               <div>
                 <p className="text-xs text-muted">Richtprijs incl. btw</p>
-                <p className="text-2xl font-bold tabular-nums text-ink">
+                <p className="text-2xl font-bold tabular-nums text-ink" data-testid="footer-total">
                   {formatEur(price.total)}
                 </p>
               </div>
