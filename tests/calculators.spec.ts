@@ -109,6 +109,9 @@ test("badkamer module estimates and offers no national subsidy", async ({ page }
   await page.getByRole("switch", { name: /Ligbad/ }).click();
   const after = await page.getByText(/Geschatte richtprijs/).locator("..").innerText();
   expect(after).not.toEqual(before);
+  // German-style washing machine + dryer setup adds a line.
+  await page.getByRole("button", { name: /Wasmachine \+ droger/ }).click();
+  await expect(page.getByText(/Wasmachine \+ droger \(incl\. kast\)/)).toBeVisible();
   // Bathrooms have no national grant.
   await expect(page.getByText(/geen landelijke subsidie/i)).toBeVisible();
 });

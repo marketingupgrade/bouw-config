@@ -99,8 +99,9 @@ export function summarizeValues(calc: Calculator, values: Values): string {
   const parts: string[] = [];
   for (const f of calc.fields) {
     const v = values[f.key];
-    if (f.type === "select") parts.push(labelFor(f, String(v)));
-    else if (f.type === "number") {
+    if (f.type === "select") {
+      if (String(v) !== "geen") parts.push(labelFor(f, String(v)));
+    } else if (f.type === "number") {
       if (Number(v) > 0) parts.push(`${v}${f.unit ? ` ${f.unit}` : ""}`);
     } else if (v) parts.push(f.label);
   }
@@ -441,9 +442,9 @@ const opbouwUitbouw: Calculator = {
 const badkamer: Calculator = {
   slug: "badkamer",
   title: "Badkamer",
-  tagline: "Complete badkamerrenovatie",
+  tagline: "Volledig naar wens samengesteld",
   description:
-    "Richtprijs voor een complete badkamerverbouwing op basis van oppervlakte, afwerkingsniveau, sanitair en tegelwerk — inclusief sloop en installatie.",
+    "Stel je badkamer tot in detail samen: afwerkingsniveau, tegelwerk, douche, toilet, wastafel, verwarming en extra's zoals een was- en drooghoek. De richtprijs rekent live mee.",
   accent: "#4f7d86",
   fields: [
     {
@@ -476,7 +477,87 @@ const badkamer: Calculator = {
         { id: "geen", label: "Geen", hint: "Bestaand tegelwerk blijft" },
         { id: "wanden", label: "Wanden", hint: "Wandtegels, +€120/m²" },
         { id: "wandenvloer", label: "Wanden en vloer", hint: "Volledig betegeld, +€180/m²" },
+        { id: "natuursteen", label: "Natuursteen / groot formaat", hint: "Premium tegels, +€320/m²" },
       ],
+    },
+    {
+      key: "douche",
+      label: "Douche",
+      type: "select",
+      default: "inloop",
+      options: [
+        { id: "geen", label: "Geen", hint: "Geen douche" },
+        { id: "cabine", label: "Douchecabine", hint: "Compleet, +€900", priceHint: "+ € 900" },
+        { id: "inloop", label: "Inloopdouche", hint: "Glaswand, +€1.200", priceHint: "+ € 1.200" },
+        { id: "regen", label: "Regendouche", hint: "Inbouw + glaswand, +€1.800", priceHint: "+ € 1.800" },
+      ],
+    },
+    {
+      key: "toilet",
+      label: "Toilet",
+      type: "select",
+      default: "hangend",
+      options: [
+        { id: "geen", label: "Geen", hint: "Geen toilet" },
+        { id: "staand", label: "Staand toilet", hint: "+€350", priceHint: "+ € 350" },
+        { id: "hangend", label: "Hangend toilet", hint: "Met inbouwreservoir, +€650", priceHint: "+ € 650" },
+      ],
+    },
+    {
+      key: "wastafel",
+      label: "Wastafel",
+      type: "select",
+      default: "enkel",
+      options: [
+        { id: "geen", label: "Geen", hint: "Geen wastafel" },
+        { id: "enkel", label: "Enkel meubel", hint: "+€650", priceHint: "+ € 650" },
+        { id: "dubbel", label: "Dubbel meubel", hint: "Twee wasbakken, +€1.150", priceHint: "+ € 1.150" },
+      ],
+    },
+    {
+      key: "verwarming",
+      label: "Verwarming",
+      type: "select",
+      default: "vloer",
+      options: [
+        { id: "geen", label: "Geen", hint: "Bestaande verwarming blijft" },
+        { id: "vloer", label: "Vloerverwarming", hint: "Elektrisch, +€110/m²" },
+        { id: "radiator", label: "Designradiator", hint: "Handdoekradiator, +€550" },
+        { id: "beide", label: "Vloerverwarming + radiator", hint: "Beide" },
+      ],
+    },
+    {
+      key: "wasopstelling",
+      label: "Was- en drooghoek",
+      help: "Aansluiting voor wasmachine (en droger) in de badkamer — naar Duits voorbeeld.",
+      type: "select",
+      default: "geen",
+      options: [
+        { id: "geen", label: "Geen", hint: "Geen wasaansluiting" },
+        { id: "wasmachine", label: "Wasmachine", hint: "Watertoevoer, afvoer + groep, +€450", priceHint: "+ € 450" },
+        { id: "combi", label: "Wasmachine + droger", hint: "Incl. ombouwkast en extra groep, +€950", priceHint: "+ € 950" },
+      ],
+    },
+    {
+      key: "ligbad",
+      label: "Ligbad",
+      help: "Vrijstaand of inbouwbad (+€1.500).",
+      type: "toggle",
+      default: false,
+    },
+    {
+      key: "spiegelkast",
+      label: "Verlichte spiegelkast",
+      help: "Spiegelkast met led-verlichting (+€350).",
+      type: "toggle",
+      default: true,
+    },
+    {
+      key: "ventilatie",
+      label: "Mechanische ventilatie",
+      help: "Vochtgestuurde afzuiging (+€450).",
+      type: "toggle",
+      default: true,
     },
     {
       key: "sloop",
@@ -485,30 +566,13 @@ const badkamer: Calculator = {
       type: "toggle",
       default: true,
     },
-    {
-      key: "vloerverwarming",
-      label: "Elektrische vloerverwarming",
-      help: "Comfortabele warme vloer (+€110/m²).",
-      type: "toggle",
-      default: false,
-    },
-    {
-      key: "toilet",
-      label: "Hangend toilet",
-      help: "Inclusief inbouwreservoir.",
-      type: "toggle",
-      default: true,
-    },
-    { key: "wastafel", label: "Wastafelmeubel", type: "toggle", default: true },
-    { key: "inloopdouche", label: "Inloopdouche", type: "toggle", default: true },
-    { key: "ligbad", label: "Ligbad", type: "toggle", default: false },
   ],
   estimate: (v) => {
     const area = num(v.oppervlak);
     const niveau = str(v.niveau);
     const perM2 = opt(niveau, { budget: 900, standaard: 1400, luxe: 2200 });
     const niveauLabel = { budget: "budget", standaard: "standaard", luxe: "luxe" }[niveau] ?? "";
-    const tegel = opt(str(v.tegelwerk), { geen: 0, wanden: 120, wandenvloer: 180 });
+    const tegel = opt(str(v.tegelwerk), { geen: 0, wanden: 120, wandenvloer: 180, natuursteen: 320 });
 
     const lines: EstimateLine[] = [
       {
@@ -521,12 +585,35 @@ const badkamer: Calculator = {
       lines.push({ label: "Tegelwerk", detail: `${area} m² × € ${tegel}/m²`, amount: tegel * area });
     if (v.sloop)
       lines.push({ label: "Sloop & afvoer", detail: `${area} m² × € 70/m²`, amount: 70 * area });
-    if (v.vloerverwarming)
+
+    const verw = str(v.verwarming);
+    if (verw === "vloer" || verw === "beide")
       lines.push({ label: "Vloerverwarming", detail: `${area} m² × € 110/m²`, amount: 110 * area });
-    if (v.toilet) lines.push({ label: "Hangend toilet", amount: 450 });
-    if (v.wastafel) lines.push({ label: "Wastafelmeubel", amount: 650 });
-    if (v.inloopdouche) lines.push({ label: "Inloopdouche", amount: 1200 });
+    if (verw === "radiator" || verw === "beide")
+      lines.push({ label: "Designradiator", amount: 550 });
+
+    const douche = opt(str(v.douche), { geen: 0, cabine: 900, inloop: 1200, regen: 1800 });
+    const doucheLabel = { cabine: "Douchecabine", inloop: "Inloopdouche", regen: "Regendouche" }[str(v.douche)];
+    if (douche > 0) lines.push({ label: doucheLabel ?? "Douche", amount: douche });
+
+    const toilet = opt(str(v.toilet), { geen: 0, staand: 350, hangend: 650 });
+    if (toilet > 0)
+      lines.push({ label: str(v.toilet) === "staand" ? "Staand toilet" : "Hangend toilet", amount: toilet });
+
+    const wastafel = opt(str(v.wastafel), { geen: 0, enkel: 650, dubbel: 1150 });
+    if (wastafel > 0)
+      lines.push({ label: str(v.wastafel) === "dubbel" ? "Dubbel wastafelmeubel" : "Wastafelmeubel", amount: wastafel });
+
+    const was = opt(str(v.wasopstelling), { geen: 0, wasmachine: 450, combi: 950 });
+    if (was > 0)
+      lines.push({
+        label: str(v.wasopstelling) === "combi" ? "Wasmachine + droger (incl. kast)" : "Wasmachineaansluiting",
+        amount: was,
+      });
+
     if (v.ligbad) lines.push({ label: "Ligbad", amount: 1500 });
+    if (v.spiegelkast) lines.push({ label: "Verlichte spiegelkast", amount: 350 });
+    if (v.ventilatie) lines.push({ label: "Mechanische ventilatie", amount: 450 });
 
     let total = lines.reduce((s, l) => s + l.amount, 0);
     if (total < 1500 && total > 0) {
