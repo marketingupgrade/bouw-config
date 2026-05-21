@@ -4,7 +4,9 @@ const CHROME = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 export default defineConfig({
   testDir: "./tests",
-  timeout: 60_000,
+  // The 3D end-to-end runs under software GL (swiftshader) and is CPU-bound,
+  // so it needs generous headroom, especially when test files run concurrently.
+  timeout: 120_000,
   fullyParallel: false,
   reporter: [["list"]],
   use: {

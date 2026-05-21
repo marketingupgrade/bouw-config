@@ -6,6 +6,7 @@ interface LeadPayload {
   values?: Record<string, unknown>;
   estimate?: number;
   contact?: Record<string, unknown>;
+  url?: string;
 }
 
 export async function POST(request: Request) {
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
     phone: payload.contact?.phone,
     postcode: payload.contact?.postcode,
     estimate: payload.estimate,
+    url: payload.url,
     values: payload.values,
   });
 

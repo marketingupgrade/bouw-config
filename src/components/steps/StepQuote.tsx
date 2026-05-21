@@ -95,7 +95,7 @@ function LeadForm() {
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contact, config }),
+        body: JSON.stringify({ contact, config, url: window.location.href }),
       });
       if (!res.ok) throw new Error("request failed");
       setStatus("done");

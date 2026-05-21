@@ -31,6 +31,27 @@ test("isolatie shows subsidy deduction", async ({ page }) => {
   await expect(page.getByText(/ISDE-subsidie/).first()).toBeVisible();
 });
 
+test("calculator state is shareable and resumable via the URL", async ({ page }) => {
+  await page.goto("/calculator/stucwerk");
+  await page.getByRole("button", { name: /Plafond/ }).click();
+  await page.getByRole("button", { name: /Sierpleister/ }).click();
+  await expect(page).toHaveURL(/onderdeel=plafond/);
+  await expect(page).toHaveURL(/afwerking=sierpleister/);
+
+  const shared = page.url();
+  await page.goto(shared);
+  await expect(page.getByRole("button", { name: /Plafond/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /Sierpleister/ })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("configurator state round-trips through a shared link", async ({ page }) => {
+  await page.goto("/aanbouw?model=gastenverblijf&cladding=trespa&terras=1");
+  await expect(page.getByRole("button", { name: /Gastenverblijf/ })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Volgende stap" }).click();
+  await expect(page.getByRole("button", { name: /Trespa plaat antraciet/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("switch", { name: /Houten terras/ })).toHaveAttribute("aria-checked", "true");
+});
+
 test("lead api rejects invalid email", async ({ page }) => {
   const res = await page.request.post("/api/lead", {
     data: { calculator: "stucwerk", contact: { name: "X", email: "nope" } },

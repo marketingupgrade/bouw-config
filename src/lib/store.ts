@@ -8,6 +8,7 @@ interface ConfiguratorState {
   config: Configuration;
   step: StepIndex;
   set: <K extends keyof Configuration>(key: K, value: Configuration[K]) => void;
+  load: (config: Configuration) => void;
   goTo: (step: StepIndex) => void;
   next: () => void;
   prev: () => void;
@@ -19,6 +20,7 @@ export const useConfigurator = create<ConfiguratorState>((set) => ({
   step: 0,
   set: (key, value) =>
     set((state) => ({ config: { ...state.config, [key]: value } })),
+  load: (config) => set({ config }),
   goTo: (step) => set({ step }),
   next: () =>
     set((state) => ({ step: Math.min(state.step + 1, 2) as StepIndex })),

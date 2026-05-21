@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
+import { decodeValues, encodeValues } from "@/lib/share";
 import {
   defaultValues,
   formatEur,
@@ -13,6 +14,7 @@ import {
   type Values,
 } from "@/lib/calculators";
 import {
+  CopyLinkButton,
   Field,
   NumberInput,
   OptionCard,
@@ -109,7 +111,13 @@ function LeadForm({
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ calculator: calc.slug, values, estimate: total, contact }),
+        body: JSON.stringify({
+          calculator: calc.slug,
+          values,
+          estimate: total,
+          contact,
+          url: window.location.href,
+        }),
       });
       if (!res.ok) throw new Error("request failed");
       setStatus("done");
@@ -175,6 +183,19 @@ export default function CalculatorTool({ slug }: { slug: string }) {
     setValues((prev) => ({ ...prev, [k]: v }));
 
   const estimate = useMemo(() => calc.estimate(values), [calc, values]);
+
+  // Sync state to the URL so the calculation can be bookmarked, resumed and shared.
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      setValues(decodeValues(calc, window.location.search));
+      return;
+    }
+    const qs = encodeValues(calc, values);
+    const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.replaceState(null, "", url);
+  }, [calc, values]);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -263,6 +284,10 @@ export default function CalculatorTool({ slug }: { slug: string }) {
                 </motion.p>
               ))}
             </AnimatePresence>
+          </div>
+
+          <div className="mt-4">
+            <CopyLinkButton className="w-full justify-center" />
           </div>
 
           <div className="mt-6">

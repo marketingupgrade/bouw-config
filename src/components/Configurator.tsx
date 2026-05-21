@@ -2,10 +2,12 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { computePrice, formatEur } from "@/lib/pricing";
+import { decodeConfig, encodeConfig } from "@/lib/share";
 import { STEPS, useConfigurator } from "@/lib/store";
+import { CopyLinkButton } from "@/components/ui";
 import StepDimensions from "@/components/steps/StepDimensions";
 import StepOptions from "@/components/steps/StepOptions";
 import StepQuote from "@/components/steps/StepQuote";
@@ -68,9 +70,24 @@ type ViewMode = "3d" | "locatie";
 
 export default function Configurator() {
   const { step, next, prev, config } = useConfigurator();
+  const load = useConfigurator((s) => s.load);
   const price = computePrice(config);
   const isLast = step === 2;
   const [view, setView] = useState<ViewMode>("3d");
+
+  // Sync the configuration to the URL so it can be bookmarked, resumed and shared.
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      const incoming = decodeConfig(window.location.search);
+      if (incoming) load(incoming);
+      return;
+    }
+    const qs = encodeConfig(config);
+    const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.replaceState(null, "", url);
+  }, [config, load]);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -82,12 +99,15 @@ export default function Configurator() {
           </Link>
           <span className="hidden text-sm text-muted sm:inline">Configurator</span>
         </div>
-        <Link
-          href="/"
-          className="hidden text-sm font-medium text-muted transition hover:text-accent sm:inline"
-        >
-          ← Alle calculators
-        </Link>
+        <div className="flex items-center gap-4">
+          <CopyLinkButton />
+          <Link
+            href="/"
+            className="hidden text-sm font-medium text-muted transition hover:text-accent sm:inline"
+          >
+            ← Alle calculators
+          </Link>
+        </div>
       </header>
 
       <div className="flex flex-1 flex-col lg:flex-row">

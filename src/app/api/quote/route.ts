@@ -5,6 +5,7 @@ import { computePrice } from "@/lib/pricing";
 interface QuotePayload {
   contact?: Record<string, unknown>;
   config?: Partial<Configuration>;
+  url?: string;
 }
 
 function sanitizeConfig(input: Partial<Configuration> | undefined): Configuration {
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
     phone: payload.contact?.phone,
     postcode: payload.contact?.postcode,
     total: price.total,
+    url: payload.url,
     config,
   });
 
