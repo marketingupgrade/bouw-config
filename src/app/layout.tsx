@@ -9,7 +9,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Configurator | Ontwerp je aanbouw op maat",
+  title: "Configurator | Bureau Wijnschenk",
   description:
     "Stel in drie stappen je prefab aanbouw samen: bepaal de afmetingen, kies je opties en ontvang direct een richtprijs.",
 };

@@ -66,7 +66,9 @@ export default function Configurator() {
     <div className="flex min-h-screen flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-line bg-surface px-5 lg:px-8">
         <div className="flex items-baseline gap-3">
-          <span className="text-base font-bold tracking-tight text-ink">DE PREFABRIEK</span>
+          <span className="text-base font-semibold uppercase tracking-[0.18em] text-accent">
+            Bureau Wijnschenk
+          </span>
           <span className="hidden text-sm text-muted sm:inline">Configurator</span>
         </div>
         <a

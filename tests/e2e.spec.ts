@@ -14,7 +14,7 @@ test("configurator end-to-end: 3 steps, 3D canvas, live pricing, lead form", asy
   await page.goto("/");
 
   // --- Header / shell ---
-  await expect(page.getByText("DE PREFABRIEK")).toBeVisible();
+  await expect(page.getByText("Bureau Wijnschenk")).toBeVisible();
   await expect(page.getByText("Stap 1 van 3")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Afmetingen" })).toBeVisible();
 
