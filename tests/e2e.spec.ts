@@ -11,7 +11,7 @@ async function footerTotal(page: Page): Promise<number> {
 }
 
 test("configurator end-to-end: 3 steps, 3D canvas, live pricing, lead form", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/aanbouw");
 
   // --- Header / shell ---
   await expect(page.getByText("Bureau Wijnschenk")).toBeVisible();
