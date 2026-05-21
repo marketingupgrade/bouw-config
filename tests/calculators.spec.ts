@@ -116,6 +116,27 @@ test("badkamer module estimates and offers no national subsidy", async ({ page }
   await expect(page.getByText(/geen landelijke subsidie/i)).toBeVisible();
 });
 
+test("vloerverwarming module estimates and reacts to system choice", async ({ page }) => {
+  await page.goto("/calculator/vloerverwarming");
+  await expect(page.getByRole("heading", { name: "Vloerverwarming", level: 1 })).toBeVisible();
+  const before = await page.getByText(/Geschatte richtprijs/).locator("..").innerText();
+  await page.getByRole("button", { name: /Elektrisch/ }).click();
+  const after = await page.getByText(/Geschatte richtprijs/).locator("..").innerText();
+  expect(after).not.toEqual(before);
+});
+
+test("vloerverwarming with vloerisolatie unlocks the ISDE grants check", async ({ page }) => {
+  await page.goto("/calculator/vloerverwarming");
+  // No insulation yet -> no national scheme.
+  await expect(page.getByText(/geen landelijke subsidie/i)).toBeVisible();
+  // Add floor insulation -> ISDE check appears (default 40 m² ≥ 20 m² minimum).
+  await page.getByRole("switch", { name: /Vloerisolatie toevoegen/ }).click();
+  await expect(page.getByText(/Subsidiecheck — ISDE/)).toBeVisible();
+  await page.getByRole("switch", { name: /Eigenaar én bewoner/ }).click();
+  await page.getByRole("switch", { name: /Bestaande woning/ }).click();
+  await expect(page.getByText(/Je komt waarschijnlijk in aanmerking/)).toBeVisible();
+});
+
 test("lead api rejects invalid email", async ({ page }) => {
   const res = await page.request.post("/api/lead", {
     data: { calculator: "stucwerk", contact: { name: "X", email: "nope" } },

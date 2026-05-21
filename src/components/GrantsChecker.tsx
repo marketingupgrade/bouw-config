@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  currentMeasureId,
   DEFAULT_ATTESTATIONS,
   evaluateGrants,
   RVO_SUBSIDY_FINDER,
@@ -75,7 +76,8 @@ export default function GrantsChecker({ slug, values }: { slug: string; values: 
   // automatically unlocks the higher ISDE rate.
   const measures = new Set<string>();
   for (const i of wishlistItems) if (i.measure && ISDE_MEASURES[i.measure]) measures.add(i.measure);
-  if (slug === "isolatie" && ISDE_MEASURES[String(values.type)]) measures.add(String(values.type));
+  const current = currentMeasureId(slug, values);
+  if (current) measures.add(current);
   const autoMulti = measures.size >= 2;
 
   const effectiveAtt: Attestations = {

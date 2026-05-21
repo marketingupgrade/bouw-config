@@ -14,6 +14,7 @@ import {
   type SelectField,
   type Values,
 } from "@/lib/calculators";
+import { currentMeasureId } from "@/lib/grants";
 import GrantsChecker from "@/components/GrantsChecker";
 import AddToWishlist from "@/components/AddToWishlist";
 import {
@@ -197,7 +198,7 @@ export default function CalculatorTool({ slug }: { slug: string }) {
     amount: estimate.total,
     amountLabel: `${formatEur(estimate.low)} – ${formatEur(estimate.high)}`,
     url: sharePath,
-    measure: calc.slug === "isolatie" ? String(values.type) : undefined,
+    measure: currentMeasureId(calc.slug, values),
   };
 
   // Sync state to the URL so the calculation can be bookmarked, resumed and shared.

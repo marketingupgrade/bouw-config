@@ -624,7 +624,128 @@ const badkamer: Calculator = {
   },
 };
 
-export const CALCULATORS: Calculator[] = [stucwerk, schilderwerk, isolatie, badkamer, opbouwUitbouw];
+const vloerverwarming: Calculator = {
+  slug: "vloerverwarming",
+  title: "Vloerverwarming",
+  tagline: "Comfortabel en warmtepomp-klaar",
+  description:
+    "Richtprijs voor vloerverwarming: elektrisch of watergedragen, infrezen in een bestaande vloer of in een nieuwe dekvloer, inclusief verdeler en regeling.",
+  accent: "#c2703d",
+  fields: [
+    {
+      key: "oppervlak",
+      label: "Te verwarmen oppervlak",
+      type: "number",
+      unit: "m²",
+      min: 2,
+      max: 400,
+      step: 1,
+      default: 40,
+    },
+    {
+      key: "systeem",
+      label: "Systeem",
+      type: "select",
+      default: "watergedragen",
+      options: [
+        { id: "watergedragen", label: "Watergedragen", hint: "Op cv-ketel of warmtepomp", priceHint: "± € 60/m²" },
+        { id: "elektrisch", label: "Elektrisch", hint: "Renovatie of badkamer", priceHint: "± € 80/m²" },
+      ],
+    },
+    {
+      key: "methode",
+      label: "Aanleg",
+      type: "select",
+      default: "infrezen",
+      options: [
+        { id: "infrezen", label: "Infrezen in bestaande vloer", hint: "Geen nieuwe dekvloer nodig" },
+        { id: "dekvloer", label: "In nieuwe dekvloer", hint: "Inclusief dekvloer, +€25/m²" },
+        { id: "nieuwbouw", label: "Tijdens nieuwbouw", hint: "Voordeliger, −€10/m²" },
+      ],
+    },
+    {
+      key: "groepen",
+      label: "Aantal verwarmingsgroepen",
+      help: "Aparte zones/kringen op de verdeler (ca. één per ruimte).",
+      type: "number",
+      min: 1,
+      max: 16,
+      step: 1,
+      default: 4,
+      control: "stepper",
+    },
+    {
+      key: "thermostaat",
+      label: "Thermostaat",
+      type: "select",
+      default: "standaard",
+      options: [
+        { id: "geen", label: "Geen", hint: "Bestaande thermostaat" },
+        { id: "standaard", label: "Standaard", hint: "+€120" },
+        { id: "slim", label: "Slim (wifi)", hint: "Per zone regelbaar, +€280" },
+      ],
+    },
+    {
+      key: "vloerisolatie",
+      label: "Vloerisolatie toevoegen",
+      help: "Isolatieplaten onder de vloerverwarming — komt in aanmerking voor ISDE-subsidie (+€30/m²).",
+      type: "toggle",
+      default: false,
+    },
+    {
+      key: "verdeler",
+      label: "Inclusief verdeler & regeling",
+      help: "Verdeelunit met pompgroep — nodig bij watergedragen systemen (+€450).",
+      type: "toggle",
+      default: true,
+    },
+    {
+      key: "vloerverwijderen",
+      label: "Bestaande vloer verwijderen",
+      help: "Slopen en afvoeren van de huidige vloer (+€15/m²).",
+      type: "toggle",
+      default: false,
+    },
+  ],
+  estimate: (v) => {
+    const area = num(v.oppervlak);
+    const systeem = str(v.systeem);
+    const base = opt(systeem, { watergedragen: 60, elektrisch: 80 });
+    const methode = opt(str(v.methode), { infrezen: 0, dekvloer: 25, nieuwbouw: -10 });
+    const perM2 = base + methode;
+    const systeemLabel = systeem === "elektrisch" ? "elektrisch" : "watergedragen";
+
+    const lines: EstimateLine[] = [
+      {
+        label: `Vloerverwarming (${systeemLabel})`,
+        detail: `${area} m² × € ${perM2}/m²`,
+        amount: Math.round(perM2 * area),
+      },
+    ];
+    if (v.vloerverwijderen)
+      lines.push({ label: "Bestaande vloer verwijderen", detail: `${area} m² × € 15/m²`, amount: 15 * area });
+    if (v.vloerisolatie)
+      lines.push({ label: "Vloerisolatie", detail: `${area} m² × € 30/m²`, amount: 30 * area });
+    if (v.verdeler) lines.push({ label: "Verdeler & regeling", amount: 450 });
+
+    const groepen = num(v.groepen);
+    if (groepen > 0)
+      lines.push({ label: "Verwarmingsgroepen", detail: `${groepen} × € 75`, amount: groepen * 75 });
+
+    const thermostaat = opt(str(v.thermostaat), { geen: 0, standaard: 120, slim: 280 });
+    if (thermostaat > 0)
+      lines.push({ label: str(v.thermostaat) === "slim" ? "Slimme thermostaat" : "Thermostaat", amount: thermostaat });
+
+    let total = lines.reduce((s, l) => s + l.amount, 0);
+    if (total < 750 && total > 0) {
+      lines.push({ label: "Minimum opdrachttarief", amount: 750 - total });
+      total = 750;
+    }
+    return { lines, total, ...band(total, 0.15), unitLabel: `± € ${perM2}/m²` };
+  },
+};
+
+export const CALCULATORS: Calculator[] = [stucwerk, schilderwerk, isolatie, badkamer, vloerverwarming, opbouwUitbouw];
 
 export function getCalculator(slug: string): Calculator | undefined {
   return CALCULATORS.find((c) => c.slug === slug);

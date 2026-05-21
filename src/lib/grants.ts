@@ -41,16 +41,24 @@ export const DEFAULT_ATTESTATIONS: Attestations = {
 // Official RVO subsidy finder, used when no specific scheme applies.
 export const RVO_SUBSIDY_FINDER = "https://www.rvo.nl/subsidies-financiering";
 
+// The ISDE-eligible insulation measure a given module + state represents, if any.
+export function currentMeasureId(slug: string, values: Values): string | undefined {
+  if (slug === "isolatie") {
+    return ISDE_MEASURES[String(values.type)] ? String(values.type) : undefined;
+  }
+  if (slug === "vloerverwarming" && values.vloerisolatie) return "vloer";
+  return undefined;
+}
+
 export function evaluateGrants(
   slug: string,
   values: Values,
   att: Attestations,
 ): GrantResult[] {
-  if (slug === "isolatie") {
-    const type = String(values.type ?? "");
+  const measureId = currentMeasureId(slug, values);
+  if (measureId) {
     const area = Number(values.oppervlak ?? 0);
-    const m = ISDE_MEASURES[type];
-    if (!m) return [];
+    const m = ISDE_MEASURES[measureId];
 
     const perM2 = att.tweeMaatregelen ? m.perM2Multi : m.perM2;
 
