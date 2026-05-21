@@ -31,6 +31,17 @@ function downscale(file: File, max = 1280): Promise<string> {
   });
 }
 
+const SHARE_TEXT = "Bekijk mijn samengestelde aanbouw van Bureau Wijnschenk!";
+
+function dataUrlToFile(dataUrl: string, name: string): File {
+  const [head, b64] = dataUrl.split(",");
+  const mime = /:(.*?);/.exec(head)?.[1] ?? "image/png";
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new File([bytes], name, { type: mime });
+}
+
 function snapshot3D(): string | null {
   const canvas = document.querySelector("canvas");
   try {
@@ -89,8 +100,52 @@ export default function LocationMockup() {
     }
   }
 
+  function triggerDownload() {
+    if (!result) return;
+    const a = document.createElement("a");
+    a.href = result;
+    a.download = "aanbouw-mockup.png";
+    a.click();
+  }
+
+  async function shareWhatsApp() {
+    if (!result) return;
+    const file = dataUrlToFile(result, "aanbouw-mockup.png");
+    if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text: SHARE_TEXT });
+        return;
+      } catch {
+        return; // user cancelled the share sheet
+      }
+    }
+    // Desktop fallback: download the image, then open WhatsApp with a message.
+    triggerDownload();
+    window.open(`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT)}`, "_blank", "noopener");
+  }
+
+  async function shareEmail() {
+    if (!result) return;
+    const file = dataUrlToFile(result, "aanbouw-mockup.png");
+    if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text: SHARE_TEXT, title: "Mijn aanbouw-mockup" });
+        return;
+      } catch {
+        return;
+      }
+    }
+    // Desktop fallback: download the image so it can be attached, then open the mail client.
+    triggerDownload();
+    const subject = encodeURIComponent("Mijn aanbouw-mockup");
+    const body = encodeURIComponent(
+      `${SHARE_TEXT}\n\nDe afbeelding is gedownload — voeg deze toe als bijlage.`,
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  }
+
   const btn =
-    "rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
+    "rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <div className="flex h-full flex-col overflow-y-auto p-5 lg:p-7">
@@ -190,18 +245,42 @@ export default function LocationMockup() {
         >
           {result ? "Opnieuw genereren" : "Genereer mockup"}
         </motion.button>
-        {result && (
-          <motion.a
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileTap={{ scale: 0.97 }}
-            href={result}
-            download="aanbouw-mockup.png"
-            className={`${btn} border border-line text-ink-soft hover:border-ink-soft`}
-          >
-            Download
-          </motion.a>
-        )}
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              key="share-actions"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-wrap gap-3"
+            >
+              <motion.button
+                type="button"
+                onClick={triggerDownload}
+                whileTap={{ scale: 0.97 }}
+                className={`${btn} border border-line text-ink-soft hover:border-ink-soft`}
+              >
+                Download
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={shareWhatsApp}
+                whileTap={{ scale: 0.97 }}
+                className={`${btn} bg-[#25D366] text-white hover:brightness-95`}
+              >
+                WhatsApp
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={shareEmail}
+                whileTap={{ scale: 0.97 }}
+                className={`${btn} border border-line text-ink-soft hover:border-ink-soft`}
+              >
+                E-mail
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
