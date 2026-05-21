@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import {
   defaultValues,
   formatEur,
@@ -119,13 +120,18 @@ function LeadForm({
 
   if (status === "done") {
     return (
-      <div className="rounded-lg border border-accent bg-accent-50 p-6 text-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+        className="rounded-lg border border-accent bg-accent-50 p-6 text-center"
+      >
         <h3 className="text-lg font-semibold text-ink">Bedankt voor je aanvraag!</h3>
         <p className="mt-2 text-sm text-ink-soft">
           We hebben je gegevens en richtprijs ontvangen en nemen binnen één
           werkdag contact met je op voor een vrijblijvende offerte op maat.
         </p>
-      </div>
+      </motion.div>
     );
   }
 
@@ -170,6 +176,7 @@ export default function CalculatorTool({ slug }: { slug: string }) {
   const estimate = useMemo(() => calc.estimate(values), [calc, values]);
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="flex min-h-screen flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-line bg-surface px-5 lg:px-8">
         <div className="flex items-baseline gap-3">
@@ -200,36 +207,61 @@ export default function CalculatorTool({ slug }: { slug: string }) {
         <aside className="lg:sticky lg:top-8 lg:self-start">
           <div className="rounded-xl border border-line bg-surface p-5">
             <p className="text-xs text-muted">Geschatte richtprijs (incl. btw)</p>
-            <p className="mt-1 text-3xl font-bold tabular-nums text-accent">
+            <motion.p
+              key={`${estimate.low}-${estimate.high}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22 }}
+              className="mt-1 text-3xl font-bold tabular-nums text-accent"
+            >
               {formatEur(estimate.low)} – {formatEur(estimate.high)}
-            </p>
+            </motion.p>
             {estimate.unitLabel && (
               <p className="mt-1 text-xs text-muted">Gemiddeld {estimate.unitLabel}</p>
             )}
 
-            <ul className="mt-4 space-y-2 border-t border-line pt-4">
-              {estimate.lines.map((line, i) => (
-                <li key={i} className="flex items-baseline justify-between gap-4 text-sm">
-                  <span className="text-ink-soft">
-                    {line.label}
-                    {line.detail && <span className="ml-1 text-xs text-muted">({line.detail})</span>}
-                  </span>
-                  <span className={`shrink-0 tabular-nums ${line.amount < 0 ? "text-accent-600" : "text-ink"}`}>
-                    {formatEur(line.amount)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-3 flex justify-between border-t border-line pt-3 text-sm font-semibold text-ink">
+            <motion.ul layout className="mt-4 space-y-2 border-t border-line pt-4">
+              <AnimatePresence initial={false}>
+                {estimate.lines.map((line) => (
+                  <motion.li
+                    key={line.label}
+                    layout
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="flex items-baseline justify-between gap-4 overflow-hidden text-sm"
+                  >
+                    <span className="text-ink-soft">
+                      {line.label}
+                      {line.detail && <span className="ml-1 text-xs text-muted">({line.detail})</span>}
+                    </span>
+                    <span className={`shrink-0 tabular-nums ${line.amount < 0 ? "text-accent-600" : "text-ink"}`}>
+                      {formatEur(line.amount)}
+                    </span>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </motion.ul>
+            <motion.div layout className="mt-3 flex justify-between border-t border-line pt-3 text-sm font-semibold text-ink">
               <span>Richtprijs</span>
               <span className="tabular-nums">{formatEur(estimate.total)}</span>
-            </div>
+            </motion.div>
 
-            {estimate.notes?.map((n, i) => (
-              <p key={i} className="mt-3 text-xs leading-relaxed text-muted">
-                {n}
-              </p>
-            ))}
+            <AnimatePresence initial={false}>
+              {estimate.notes?.map((n) => (
+                <motion.p
+                  key={n}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="mt-3 text-xs leading-relaxed text-muted"
+                >
+                  {n}
+                </motion.p>
+              ))}
+            </AnimatePresence>
           </div>
 
           <div className="mt-6">
@@ -239,5 +271,6 @@ export default function CalculatorTool({ slug }: { slug: string }) {
         </aside>
       </div>
     </div>
+    </MotionConfig>
   );
 }

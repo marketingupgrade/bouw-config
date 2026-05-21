@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { motion } from "motion/react";
 import { describeConfiguration } from "@/lib/pricing";
 import { useConfigurator } from "@/lib/store";
 
@@ -145,7 +146,15 @@ export default function LocationMockup() {
             )}
             {status !== "busy" && result && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={result} alt="AI-mockup" className="h-full w-full object-cover" />
+              <motion.img
+                key={result}
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                src={result}
+                alt="AI-mockup"
+                className="h-full w-full object-cover"
+              />
             )}
             {status !== "busy" && !result && (
               <span className="px-4 text-sm text-muted">

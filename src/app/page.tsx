@@ -1,19 +1,11 @@
-import Link from "next/link";
 import { CALCULATORS } from "@/lib/calculators";
+import HubGrid, { type Tool } from "@/components/HubGrid";
 
 export const metadata = {
   title: "Calculators & configurator | Bureau Wijnschenk",
   description:
     "Bereken eenvoudig een richtprijs voor stucwerk, schilderwerk, isolatie, opbouw en uitbouw — of stel je prefab aanbouw samen in 3D.",
 };
-
-interface Tool {
-  href: string;
-  title: string;
-  tagline: string;
-  accent: string;
-  badge?: string;
-}
 
 const featured: Tool = {
   href: "/aanbouw",
@@ -30,38 +22,6 @@ const tools: Tool[] = CALCULATORS.map((c) => ({
   tagline: c.tagline,
   accent: c.accent,
 }));
-
-function ToolCard({ tool, large = false }: { tool: Tool; large?: boolean }) {
-  return (
-    <Link
-      href={tool.href}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-line bg-surface p-6 transition hover:-translate-y-0.5 hover:shadow-lg ${
-        large ? "sm:col-span-2" : ""
-      }`}
-    >
-      <span
-        className="absolute inset-x-0 top-0 h-1.5"
-        style={{ background: tool.accent }}
-        aria-hidden
-      />
-      <div>
-        <div className="flex items-start justify-between gap-3">
-          <h2 className={`font-bold text-ink ${large ? "text-xl" : "text-lg"}`}>{tool.title}</h2>
-          {tool.badge && (
-            <span className="shrink-0 rounded-full bg-accent-50 px-2.5 py-1 text-xs font-semibold text-accent">
-              {tool.badge}
-            </span>
-          )}
-        </div>
-        <p className="mt-2 text-sm leading-relaxed text-muted">{tool.tagline}</p>
-      </div>
-      <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-accent">
-        Bereken richtprijs
-        <span className="transition group-hover:translate-x-0.5">→</span>
-      </span>
-    </Link>
-  );
-}
 
 export default function Home() {
   return (
@@ -85,11 +45,8 @@ export default function Home() {
           indicatieve richtprijs. Daarna vraag je vrijblijvend een offerte op maat aan.
         </p>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <ToolCard tool={featured} large />
-          {tools.map((t) => (
-            <ToolCard key={t.href} tool={t} />
-          ))}
+        <div className="mt-10">
+          <HubGrid featured={featured} tools={tools} />
         </div>
       </main>
 

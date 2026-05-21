@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
+import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { computePrice, formatEur } from "@/lib/pricing";
 import { STEPS, useConfigurator } from "@/lib/store";
 import StepDimensions from "@/components/steps/StepDimensions";
@@ -69,6 +70,7 @@ export default function Configurator() {
   const [view, setView] = useState<ViewMode>("3d");
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="flex min-h-screen flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-line bg-surface px-5 lg:px-8">
         <div className="flex items-baseline gap-3">
@@ -91,11 +93,19 @@ export default function Configurator() {
           {/* Canvas stays mounted under any overlay so a snapshot can be captured. */}
           <Viewer3D />
 
-          {view === "locatie" && (
-            <div className="absolute inset-0 z-10 bg-surface">
-              <LocationMockup />
-            </div>
-          )}
+          <AnimatePresence>
+            {view === "locatie" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 z-10 bg-surface"
+              >
+                <LocationMockup />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Mode tabs */}
           <div className="absolute left-3 top-3 z-20 inline-flex rounded-lg border border-line bg-surface/90 p-0.5 backdrop-blur">
@@ -127,11 +137,21 @@ export default function Configurator() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-6 lg:px-7">
-            <p className="eyebrow">Stap {step + 1} van 3</p>
-            <h1 className="mb-6 mt-1 text-xl font-bold text-ink">{STEPS[step]}</h1>
-            {step === 0 && <StepDimensions />}
-            {step === 1 && <StepOptions />}
-            {step === 2 && <StepQuote />}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.22 }}
+              >
+                <p className="eyebrow">Stap {step + 1} van 3</p>
+                <h1 className="mb-6 mt-1 text-xl font-bold text-ink">{STEPS[step]}</h1>
+                {step === 0 && <StepDimensions />}
+                {step === 1 && <StepOptions />}
+                {step === 2 && <StepQuote />}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Sticky footer: live price + nav */}
@@ -139,9 +159,16 @@ export default function Configurator() {
             <div className="mb-3 flex items-end justify-between">
               <div>
                 <p className="text-xs text-muted">Richtprijs incl. btw</p>
-                <p className="text-2xl font-bold tabular-nums text-ink" data-testid="footer-total">
+                <motion.p
+                  key={price.total}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-2xl font-bold tabular-nums text-ink"
+                  data-testid="footer-total"
+                >
                   {formatEur(price.total)}
-                </p>
+                </motion.p>
               </div>
               <p className="text-xs text-muted">{price.area.toFixed(1)} m²</p>
             </div>
@@ -167,5 +194,6 @@ export default function Configurator() {
         </div>
       </div>
     </div>
+    </MotionConfig>
   );
 }
