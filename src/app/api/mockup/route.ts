@@ -6,9 +6,10 @@ export const maxDuration = 60;
 const MODEL = process.env.GEMINI_IMAGE_MODEL ?? "gemini-2.5-flash-image";
 
 interface MockupPayload {
-  photo?: string; // data URL of the location photo
-  snapshot?: string; // data URL of the 3D render
-  spec?: string; // text description of the configured extension
+  photo?: string; // data URL of the source photo
+  snapshot?: string; // data URL of the 3D render (compose mode only)
+  spec?: string; // text description of the configured proposition
+  mode?: "compose" | "edit"; // compose = place a new object; edit = modify the photo in place
 }
 
 function splitDataUrl(dataUrl: string): { mimeType: string; data: string } | null {
@@ -39,20 +40,32 @@ export async function POST(request: Request) {
   }
   const snapshot = payload.snapshot ? splitDataUrl(payload.snapshot) : null;
 
-  const prompt = [
-    "You are an architectural visualisation assistant.",
-    "The first image is a real photo of a location where a prefab home extension will be built.",
-    snapshot
-      ? "The second image is a 3D render of the exact extension that has been configured."
-      : "",
-    `The extension is ${payload.spec ?? "a modern prefab home extension"}`,
-    "Composite this extension realistically into the location photo: match the perspective,",
-    "lighting direction, scale, shadows and ground contact so it looks genuinely built on site.",
-    "Place it in the most natural position (attached to the house or in the open space).",
-    "Keep the rest of the photo unchanged and photorealistic. Output only the edited photograph.",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const mode = payload.mode ?? "compose";
+  const spec = payload.spec ?? "the proposed work";
+
+  const prompt =
+    mode === "edit"
+      ? [
+          "You are an architectural visualisation assistant.",
+          "The user uploaded a real photo of an existing space.",
+          `Edit the photo in place to reflect: ${spec}.`,
+          "Modify only the elements affected by the change; keep the rest of the photo unchanged",
+          "(perspective, lighting direction, framing, background and surrounding architecture).",
+          "Match scale, light and shadow so the result looks like a real photograph of the renovated space.",
+          "Output only the edited photograph.",
+        ].join(" ")
+      : [
+          "You are an architectural visualisation assistant.",
+          "The first image is a real photo of a location where a prefab home extension will be built.",
+          snapshot ? "The second image is a 3D render of the exact extension that has been configured." : "",
+          `The extension is ${spec}.`,
+          "Composite this extension realistically into the location photo: match the perspective,",
+          "lighting direction, scale, shadows and ground contact so it looks genuinely built on site.",
+          "Place it in the most natural position (attached to the house or in the open space).",
+          "Keep the rest of the photo unchanged and photorealistic. Output only the edited photograph.",
+        ]
+          .filter(Boolean)
+          .join(" ");
 
   const parts: Record<string, unknown>[] = [
     { text: prompt },

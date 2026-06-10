@@ -59,6 +59,12 @@ export interface Estimate {
   notes?: string[];
 }
 
+export interface CalcMockup {
+  uploadLabel: string;
+  description: string;
+  buildPrompt: (v: Values) => string;
+}
+
 export interface Calculator {
   slug: string;
   title: string;
@@ -67,6 +73,7 @@ export interface Calculator {
   accent: string; // hex used for the hub card accent
   fields: Field[];
   estimate: (v: Values) => Estimate;
+  mockup?: CalcMockup;
 }
 
 // --- helpers -------------------------------------------------------------
@@ -622,6 +629,50 @@ const badkamer: Calculator = {
     }
     return { lines, total, ...band(total, 0.15), unitLabel: `± € ${perM2.toLocaleString("nl-NL")}/m²` };
   },
+  mockup: {
+    uploadLabel: "Foto van je huidige badkamer",
+    description:
+      "Upload een foto van je huidige badkamer en we tonen direct hoe jouw samenstelling eruit kan zien.",
+    buildPrompt: (v) => {
+      const parts = [
+        `a ${str(v.niveau)} level renovation`,
+        v.tegelwerk !== "geen"
+          ? `with ${
+              { wanden: "wall tiles", wandenvloer: "wall and floor tiles", natuursteen: "premium natural-stone tiles" }[
+                str(v.tegelwerk)
+              ] ?? "tiles"
+            }`
+          : "with existing tile work",
+        v.douche !== "geen"
+          ? `a new ${
+              { cabine: "shower cabin", inloop: "walk-in shower with glass screen", regen: "rain shower with glass screen" }[
+                str(v.douche)
+              ] ?? "shower"
+            }`
+          : "",
+        v.toilet !== "geen"
+          ? str(v.toilet) === "hangend"
+            ? "a wall-hung toilet"
+            : "a floor-standing toilet"
+          : "",
+        v.wastafel !== "geen"
+          ? str(v.wastafel) === "dubbel"
+            ? "a double vanity with two basins"
+            : "a single vanity"
+          : "",
+        v.verwarming === "vloer" || v.verwarming === "beide" ? "underfloor heating" : "",
+        v.verwarming === "radiator" || v.verwarming === "beide" ? "a designer towel radiator" : "",
+        v.wasopstelling === "wasmachine"
+          ? "a built-in washing machine connection"
+          : v.wasopstelling === "combi"
+            ? "a built-in laundry cabinet with washing machine and stacked dryer"
+            : "",
+        v.ligbad ? "a freestanding bath tub" : "",
+        v.spiegelkast ? "an illuminated LED mirror cabinet" : "",
+      ].filter(Boolean);
+      return parts.join(", ");
+    },
+  },
 };
 
 const vloerverwarming: Calculator = {
@@ -954,6 +1005,40 @@ const kozijnen: Calculator = {
       unitLabel: `${area.toFixed(2)} m² × € ${matPerM2}/m²`,
       notes,
     };
+  },
+  mockup: {
+    uploadLabel: "Foto van je gevel of huidige raamopening",
+    description:
+      "Upload een foto en we plaatsen het samengestelde kozijn in beeld zoals het er bij jou uit zou zien.",
+    buildPrompt: (v) => {
+      const wMm = num(v.breedte);
+      const hMm = num(v.hoogte);
+      const m = str(v.materiaal);
+      const matLabel =
+        { hout: "wooden", kunststof: "PVC", aluminium: "aluminium", staal: "steel" }[m] ?? m;
+      const colourOut =
+        { wit: "white", antraciet: "anthracite grey", hout: "wood-look", opaanvraag: "custom-coloured" }[
+          str(v.kleurBuiten)
+        ] ?? "white";
+      const glas =
+        { hrpp: "HR++ glass", triple: "triple-glazed glass", matglas: "frosted glass", zonwerend: "solar-control glass" }[
+          str(v.beglazing)
+        ] ?? "HR++ glass";
+      const indeling =
+        {
+          enkel: "single fixed pane",
+          horizontaal: "two-pane horizontal split with a transom (bovenlicht)",
+          verticaal: "two-pane vertical split",
+          vierdelig: "four-pane cross-divided layout",
+        }[str(v.indeling)] ?? "single pane";
+      const vulling =
+        str(v.vulling) === "draaikiep"
+          ? "tilt-and-turn opening sash"
+          : str(v.vulling) === "combi"
+            ? "combination of a fixed pane and a tilt-and-turn sash"
+            : "fixed glazing";
+      return `new ${matLabel} window frames painted ${colourOut}, with ${indeling}, ${vulling}, fitted with ${glas}, sized ${wMm}×${hMm} mm`;
+    },
   },
 };
 

@@ -12,6 +12,7 @@ import {
 import { ISDE_MEASURES } from "@/lib/isde";
 import { formatEur, type Values } from "@/lib/calculators";
 import { useWishlist } from "@/lib/wishlist";
+import { useWoning } from "@/lib/woning";
 import { ToggleRow } from "@/components/ui";
 
 const RIJKSBLAUW = "#154273";
@@ -70,6 +71,7 @@ function CriterionRow({ label, met }: { label: string; met: boolean }) {
 export default function GrantsChecker({ slug, values }: { slug: string; values: Values }) {
   const [att, setAtt] = useState<Attestations>(DEFAULT_ATTESTATIONS);
   const wishlistItems = useWishlist((s) => s.items);
+  const woning = useWoning((s) => s.woning);
 
   // Count distinct ISDE-eligible measures the user is pursuing: those already
   // on the wishlist plus the one currently being calculated. Two or more
@@ -80,8 +82,13 @@ export default function GrantsChecker({ slug, values }: { slug: string; values: 
   if (current) measures.add(current);
   const autoMulti = measures.size >= 2;
 
+  // A confirmed BAG address proves the property exists, so it always counts
+  // as a bestaande woning for the subsidy check.
+  const bagBestaandeWoning = Boolean(woning);
+
   const effectiveAtt: Attestations = {
     ...att,
+    bestaandeWoning: att.bestaandeWoning || bagBestaandeWoning,
     tweeMaatregelen: att.tweeMaatregelen || autoMulti,
   };
   const grants = evaluateGrants(slug, values, effectiveAtt);
@@ -122,8 +129,13 @@ export default function GrantsChecker({ slug, values }: { slug: string; values: 
                 />
                 <ToggleRow
                   label="Bestaande woning"
-                  checked={att.bestaandeWoning}
-                  onChange={(v) => setAtt((a) => ({ ...a, bestaandeWoning: v }))}
+                  description={
+                    bagBestaandeWoning
+                      ? "Automatisch op basis van je BAG-woninggegevens"
+                      : undefined
+                  }
+                  checked={effectiveAtt.bestaandeWoning}
+                  onChange={(v) => !bagBestaandeWoning && setAtt((a) => ({ ...a, bestaandeWoning: v }))}
                 />
                 <ToggleRow
                   label="Twee of meer maatregelen"

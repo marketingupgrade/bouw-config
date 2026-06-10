@@ -17,6 +17,8 @@ import {
 import { currentMeasureId } from "@/lib/grants";
 import GrantsChecker from "@/components/GrantsChecker";
 import AddToWishlist from "@/components/AddToWishlist";
+import MockupPanel from "@/components/MockupPanel";
+import WoningAutofill from "@/components/WoningAutofill";
 import {
   CopyLinkButton,
   Field,
@@ -234,7 +236,10 @@ export default function CalculatorTool({ slug }: { slug: string }) {
         <div>
           <p className="eyebrow">Calculator</p>
           <h1 className="mb-1 mt-1 text-2xl font-bold text-ink">{calc.title}</h1>
-          <p className="mb-7 max-w-prose text-sm text-muted">{calc.description}</p>
+          <p className="mb-5 max-w-prose text-sm text-muted">{calc.description}</p>
+          <div className="mb-6">
+            <WoningAutofill />
+          </div>
           <div className="space-y-7">
             {calc.fields.map((f) => (
               <FieldControl key={f.key} calc={calc} fieldKey={f.key} values={values} setValue={setValue} />
@@ -311,6 +316,12 @@ export default function CalculatorTool({ slug }: { slug: string }) {
           <div className="mt-6">
             <GrantsChecker slug={calc.slug} values={values} />
           </div>
+
+          {calc.mockup && (
+            <div className="mt-6">
+              <MockupPanel calc={calc} values={values} />
+            </div>
+          )}
 
           <div className="mt-6">
             <h3 className="mb-3 text-sm font-semibold text-ink">Offerte aanvragen</h3>

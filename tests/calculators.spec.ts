@@ -157,6 +157,29 @@ test("triple glazing on a large kozijn becomes ISDE-eligible", async ({ page }) 
   await expect(page.getByText(/U-waarde ≤ 0,7/)).toBeVisible();
 });
 
+test("bag api rejects an invalid postcode/huisnummer", async ({ page }) => {
+  const res = await page.request.post("/api/bag", {
+    data: { postcode: "abc", huisnummer: "x" },
+  });
+  expect(res.status()).toBe(422);
+});
+
+test("calculators expose the woning autofill widget", async ({ page }) => {
+  await page.goto("/calculator/stucwerk");
+  await expect(page.getByRole("heading", { name: /Vul je woninggegevens in/ })).toBeVisible();
+  await expect(page.getByPlaceholder("1011 AB")).toBeVisible();
+});
+
+test("badkamer and kozijnen modules expose the AI mockup panel", async ({ page }) => {
+  await page.goto("/calculator/badkamer");
+  await expect(page.getByRole("heading", { name: /Zie het op je eigen foto/ })).toBeVisible();
+  await page.goto("/calculator/kozijnen");
+  await expect(page.getByRole("heading", { name: /Zie het op je eigen foto/ })).toBeVisible();
+  // Stucwerk has no mockup config — should not show the panel.
+  await page.goto("/calculator/stucwerk");
+  await expect(page.getByRole("heading", { name: /Zie het op je eigen foto/ })).toHaveCount(0);
+});
+
 test("lead api rejects invalid email", async ({ page }) => {
   const res = await page.request.post("/api/lead", {
     data: { calculator: "stucwerk", contact: { name: "X", email: "nope" } },
