@@ -137,6 +137,26 @@ test("vloerverwarming with vloerisolatie unlocks the ISDE grants check", async (
   await expect(page.getByText(/Je komt waarschijnlijk in aanmerking/)).toBeVisible();
 });
 
+test("kozijnen module configures a window and shows delivery time", async ({ page }) => {
+  await page.goto("/calculator/kozijnen");
+  await expect(page.getByRole("heading", { name: "Kozijnen op maat", level: 1 })).toBeVisible();
+  await expect(page.getByText(/Geschatte richtlevertijd/)).toBeVisible();
+  // Switch material; the estimate must change.
+  const before = await page.getByText(/Geschatte richtprijs/).locator("..").innerText();
+  await page.getByRole("button", { name: /Aluminium/ }).first().click();
+  const after = await page.getByText(/Geschatte richtprijs/).locator("..").innerText();
+  expect(after).not.toEqual(before);
+});
+
+test("triple glazing on a large kozijn becomes ISDE-eligible", async ({ page }) => {
+  // 3 m × 3 m triple glas = 9 m² ≥ 8 m² minimum for HR++/triple under ISDE.
+  await page.goto("/calculator/kozijnen?breedte=3000&hoogte=3000&beglazing=triple");
+  await page.getByRole("switch", { name: /Eigenaar én bewoner/ }).click();
+  await page.getByRole("switch", { name: /Bestaande woning/ }).click();
+  await expect(page.getByText(/Je komt waarschijnlijk in aanmerking/)).toBeVisible();
+  await expect(page.getByText(/U-waarde ≤ 0,7/)).toBeVisible();
+});
+
 test("lead api rejects invalid email", async ({ page }) => {
   const res = await page.request.post("/api/lead", {
     data: { calculator: "stucwerk", contact: { name: "X", email: "nope" } },

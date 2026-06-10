@@ -745,7 +745,227 @@ const vloerverwarming: Calculator = {
   },
 };
 
-export const CALCULATORS: Calculator[] = [stucwerk, schilderwerk, isolatie, badkamer, vloerverwarming, opbouwUitbouw];
+const kozijnen: Calculator = {
+  slug: "kozijnen",
+  title: "Kozijnen op maat",
+  tagline: "Vensters samenstellen in een paar stappen",
+  description:
+    "Stel een kozijn op maat samen: materiaal, buitenmaten, indeling, vulling, beglazing en afwerking. De richtprijs en richtlevertijd rekenen live mee.",
+  accent: "#2b5a8a",
+  fields: [
+    {
+      key: "materiaal",
+      label: "Materiaal",
+      type: "select",
+      default: "kunststof",
+      options: [
+        { id: "hout", label: "Hout (Meranti, FSC)", hint: "Massief, kleurbaar", priceHint: "± € 450/m²" },
+        { id: "kunststof", label: "Kunststof (PVC)", hint: "Onderhoudsarm", priceHint: "± € 380/m²" },
+        { id: "aluminium", label: "Aluminium", hint: "Slank profiel", priceHint: "± € 620/m²" },
+        { id: "staal", label: "Staal", hint: "Industrieel/strak", priceHint: "± € 750/m²" },
+      ],
+    },
+    {
+      key: "breedte",
+      label: "Buitenmaat breedte",
+      type: "number",
+      unit: "mm",
+      min: 400,
+      max: 3000,
+      step: 10,
+      default: 1200,
+    },
+    {
+      key: "hoogte",
+      label: "Buitenmaat hoogte",
+      type: "number",
+      unit: "mm",
+      min: 400,
+      max: 3000,
+      step: 10,
+      default: 1400,
+    },
+    {
+      key: "indeling",
+      label: "Indeling",
+      type: "select",
+      default: "enkel",
+      options: [
+        { id: "enkel", label: "Enkel vak", hint: "Eén opening" },
+        { id: "horizontaal", label: "2-vaks horizontaal", hint: "Met bovenlicht, +€180" },
+        { id: "verticaal", label: "2-vaks verticaal", hint: "Verticaal gedeeld, +€180" },
+        { id: "vierdelig", label: "4-vaks (kruisdeling)", hint: "+€420" },
+      ],
+    },
+    {
+      key: "vulling",
+      label: "Type vulling",
+      type: "select",
+      default: "draaikiep",
+      options: [
+        { id: "vast", label: "Vast glas", hint: "Niet te openen" },
+        { id: "draaikiep", label: "Draaikiep", hint: "Te openen + ventilatie, +€220" },
+        { id: "combi", label: "Vast + draaikiep", hint: "+€280" },
+      ],
+    },
+    {
+      key: "beglazing",
+      label: "Beglazing",
+      type: "select",
+      default: "hrpp",
+      options: [
+        { id: "hrpp", label: "HR++ glas", hint: "Standaard isolerend" },
+        { id: "triple", label: "Triple glas", hint: "Maximale isolatie, +€80/m²" },
+        { id: "matglas", label: "Matglas / privacy", hint: "+€40/m²" },
+        { id: "zonwerend", label: "Zonwerend glas", hint: "+€60/m²" },
+      ],
+    },
+    {
+      key: "dorpel",
+      label: "Onderdorpel",
+      type: "select",
+      default: "kunststeen",
+      options: [
+        { id: "geen", label: "Geen aparte dorpel" },
+        { id: "kunststeen", label: "Kunststeen (composiet)", hint: "+€120/m" },
+        { id: "hardhout", label: "Hardhout", hint: "+€180/m" },
+        { id: "aluminium", label: "Aluminium", hint: "+€220/m" },
+      ],
+    },
+    {
+      key: "kleurBinnen",
+      label: "Kleur binnen",
+      type: "select",
+      default: "wit",
+      options: [
+        { id: "wit", label: "Wit (RAL 9010)", hint: "Standaard" },
+        { id: "antraciet", label: "Antraciet (RAL 7016)", hint: "+€90" },
+        { id: "hout", label: "Houtnerf folie", hint: "+€120" },
+        { id: "opaanvraag", label: "Kleur op aanvraag", hint: "+€200" },
+      ],
+    },
+    {
+      key: "kleurBuiten",
+      label: "Kleur buiten",
+      type: "select",
+      default: "wit",
+      options: [
+        { id: "wit", label: "Wit (RAL 9010)", hint: "Standaard" },
+        { id: "antraciet", label: "Antraciet (RAL 7016)", hint: "+€120" },
+        { id: "hout", label: "Houtnerf folie", hint: "+€150" },
+        { id: "opaanvraag", label: "Kleur op aanvraag", hint: "+€220" },
+      ],
+    },
+    {
+      key: "muur",
+      label: "Muuraansluiting",
+      type: "select",
+      default: "spouw",
+      options: [
+        { id: "spouw", label: "In spouwmuur", hint: "Standaard" },
+        { id: "binnenblad", label: "Op binnenblad", hint: "Extra werk, +€90" },
+        { id: "nieuwbouw", label: "Nieuwbouw", hint: "Eenvoudiger, −€40" },
+      ],
+    },
+    {
+      key: "ventilatie",
+      label: "Ventilatierooster",
+      help: "Suskast / zelfregelend rooster boven het glas (+€140).",
+      type: "toggle",
+      default: false,
+    },
+    {
+      key: "hor",
+      label: "Inzethor",
+      help: "Vast inzetscherm voor draaikiep-vak (+€180).",
+      type: "toggle",
+      default: false,
+    },
+  ],
+  estimate: (v) => {
+    const wMm = num(v.breedte);
+    const hMm = num(v.hoogte);
+    const w = wMm / 1000;
+    const h = hMm / 1000;
+    const area = w * h;
+    const materiaal = str(v.materiaal);
+    const matPerM2 = opt(materiaal, { hout: 450, kunststof: 380, aluminium: 620, staal: 750 });
+    const matLabel =
+      { hout: "hout", kunststof: "kunststof", aluminium: "aluminium", staal: "staal" }[materiaal] ?? materiaal;
+
+    const beglazing = str(v.beglazing);
+    const beglazingPerM2 = opt(beglazing, { hrpp: 0, triple: 80, matglas: 40, zonwerend: 60 });
+    const beglazingLabel =
+      { hrpp: "HR++ glas", triple: "Triple glas", matglas: "Matglas", zonwerend: "Zonwerend glas" }[beglazing] ?? "";
+
+    const indeling = opt(str(v.indeling), { enkel: 0, horizontaal: 180, verticaal: 180, vierdelig: 420 });
+    const vulling = opt(str(v.vulling), { vast: 0, draaikiep: 220, combi: 280 });
+    const vullingLabel = { draaikiep: "Draaikiepfunctie", combi: "Vast + draaikiep" }[str(v.vulling)];
+
+    const dorpelPerM = opt(str(v.dorpel), { geen: 0, kunststeen: 120, hardhout: 180, aluminium: 220 });
+    const dorpelLabel = {
+      kunststeen: "Kunststeen dorpel",
+      hardhout: "Hardhouten dorpel",
+      aluminium: "Aluminium dorpel",
+    }[str(v.dorpel)];
+
+    const kleurBinnen = opt(str(v.kleurBinnen), { wit: 0, antraciet: 90, hout: 120, opaanvraag: 200 });
+    const kleurBuiten = opt(str(v.kleurBuiten), { wit: 0, antraciet: 120, hout: 150, opaanvraag: 220 });
+    const muur = opt(str(v.muur), { spouw: 0, binnenblad: 90, nieuwbouw: -40 });
+
+    const lines: EstimateLine[] = [
+      {
+        label: `Kozijn (${matLabel})`,
+        detail: `${wMm}×${hMm} mm = ${area.toFixed(2)} m²`,
+        amount: Math.round(matPerM2 * area),
+      },
+    ];
+    if (beglazingPerM2 > 0)
+      lines.push({
+        label: beglazingLabel,
+        detail: `${area.toFixed(2)} m² × € ${beglazingPerM2}/m²`,
+        amount: Math.round(beglazingPerM2 * area),
+      });
+    if (indeling > 0) lines.push({ label: "Indeling (stijlen/dorpels)", amount: indeling });
+    if (vulling > 0 && vullingLabel) lines.push({ label: vullingLabel, amount: vulling });
+    if (dorpelPerM > 0 && dorpelLabel)
+      lines.push({ label: dorpelLabel, detail: `${w.toFixed(2)} m × € ${dorpelPerM}/m`, amount: Math.round(dorpelPerM * w) });
+    if (kleurBinnen > 0) lines.push({ label: "Kleur binnen", amount: kleurBinnen });
+    if (kleurBuiten > 0) lines.push({ label: "Kleur buiten", amount: kleurBuiten });
+    if (muur !== 0)
+      lines.push({ label: muur > 0 ? "Muuraansluiting op binnenblad" : "Nieuwbouwkorting muuraansluiting", amount: muur });
+    if (v.ventilatie) lines.push({ label: "Ventilatierooster", amount: 140 });
+    if (v.hor) lines.push({ label: "Inzethor", amount: 180 });
+
+    let total = lines.reduce((s, l) => s + l.amount, 0);
+    if (total < 450 && total > 0) {
+      lines.push({ label: "Minimum tarief", amount: 450 - total });
+      total = 450;
+    }
+
+    const delivery =
+      { hout: "± 6 weken", kunststof: "± 4 weken", aluminium: "± 6 weken", staal: "± 8 weken" }[materiaal];
+    const notes = delivery ? [`Geschatte richtlevertijd: ${delivery}.`] : undefined;
+
+    return {
+      lines,
+      total,
+      ...band(total, 0.1),
+      unitLabel: `${area.toFixed(2)} m² × € ${matPerM2}/m²`,
+      notes,
+    };
+  },
+};
+
+export const CALCULATORS: Calculator[] = [
+  stucwerk,
+  schilderwerk,
+  isolatie,
+  badkamer,
+  vloerverwarming,
+  kozijnen,
+  opbouwUitbouw,
+];
 
 export function getCalculator(slug: string): Calculator | undefined {
   return CALCULATORS.find((c) => c.slug === slug);

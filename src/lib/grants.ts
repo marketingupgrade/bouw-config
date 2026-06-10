@@ -47,7 +47,20 @@ export function currentMeasureId(slug: string, values: Values): string | undefin
     return ISDE_MEASURES[String(values.type)] ? String(values.type) : undefined;
   }
   if (slug === "vloerverwarming" && values.vloerisolatie) return "vloer";
+  if (slug === "kozijnen") {
+    const b = String(values.beglazing);
+    if (b === "hrpp" || b === "triple") return b;
+  }
   return undefined;
+}
+
+// Treated surface in m² for the current ISDE measure, derived from the values
+// of the calculator the user is on. Kozijnen are sized in mm; others in m².
+function measureArea(slug: string, values: Values): number {
+  if (slug === "kozijnen") {
+    return (Number(values.breedte ?? 0) * Number(values.hoogte ?? 0)) / 1_000_000;
+  }
+  return Number(values.oppervlak ?? 0);
 }
 
 export function evaluateGrants(
@@ -57,7 +70,7 @@ export function evaluateGrants(
 ): GrantResult[] {
   const measureId = currentMeasureId(slug, values);
   if (measureId) {
-    const area = Number(values.oppervlak ?? 0);
+    const area = measureArea(slug, values);
     const m = ISDE_MEASURES[measureId];
 
     const perM2 = att.tweeMaatregelen ? m.perM2Multi : m.perM2;
